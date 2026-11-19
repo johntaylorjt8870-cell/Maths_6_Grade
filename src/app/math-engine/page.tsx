@@ -1,19 +1,24 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
-import { isTeacher } from "@/lib/auth";
 import { M, MathBlock, Q, SvgMath } from "@/components/math/Math";
+import { RichText } from "@/components/math/RichText";
 
-export const metadata: Metadata = { title: "فحص محرك الرياضيات", robots: { index: false, follow: false } };
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "محرك الرياضيات",
+  description: "عرض رموز وكسور ومعادلات الرياضيات على المنصة باستخدام KaTeX داخل صفحات عربية RTL.",
+};
 
-export default async function MathTestPage() {
-  if (!(await isTeacher())) redirect("/teacher");
-
+/**
+ * صفحة عرض محرك الرياضيات.
+ * كانت سابقًا صفحة فحص داخلية محمية بكلمة مرور المعلم؛ أُزيلت الحماية الخادمية
+ * وبقي الجزء التعليمي النافع: معاينة حقيقية لكل أنواع الترميز الرياضي بالمحرك نفسه.
+ */
+export default function MathEnginePage() {
   return (
     <main className="mx-auto max-w-[1000px] px-6 py-10">
-      <h1 className="text-[2rem] font-bold">فحص محرك الرياضيات (KaTeX)</h1>
+      <h1 className="text-[2rem] font-bold">محرك الرياضيات (KaTeX)</h1>
       <p className="mt-2 text-ink-soft">
-        صفحة فحص داخلية: إن ظهر أي أمر LaTeX نصًا حرفيًا هنا فهناك خلل في المحرك.
+        كل تعبير رياضي على المنصة يُعرض بمحرك KaTeX، معزولًا باتجاه LTR داخل النص العربي.
+        هذه الصفحة تعرض الأنواع التي ستُستخدم في الدروس.
       </p>
 
       <div className="mt-6 space-y-5">
@@ -31,6 +36,18 @@ export default async function MathTestPage() {
           <MathBlock tex="\frac{3}{4} + \frac{1}{4} = \frac{4}{4} = 1" />
           <MathBlock tex="\vec{F} = m\,\vec{a}, \qquad \alpha,\beta,\gamma,\lambda,\mu,\rho,\Omega,\Sigma,\Delta" />
           <MathBlock tex="\sqrt{49} = 7, \qquad \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix}, \qquad \mathrm{H_2O},\; \mathrm{Na^+}" />
+        </section>
+
+        <section className="card p-6">
+          <h2 className="mb-2 text-lg font-bold">نص عربي مختلط بالرياضيات</h2>
+          <p className="text-[1.05rem]">
+            <RichText
+              text={
+                "نكتب الكسر العشري $0.75$ على صورة كسر عادي $\\frac{3}{4}$، ونقارن بينهما فنجد $\\frac{3}{4} = 0.75$. " +
+                "ومحيط الدائرة $C = 2\\pi r$، ومساحتها $A = \\pi r^{2}$."
+              }
+            />
+          </p>
         </section>
 
         <section className="card p-6">

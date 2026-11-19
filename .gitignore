@@ -11,3 +11,7 @@ coverage/
 Thumbs.db
 test-results/
 playwright-report/
+# Next.js / TypeScript build artifacts
+next-env.d.ts
+tsconfig.tsbuildinfo
+*.tsbuildinfo

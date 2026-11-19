@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { stripBasePath } from "@/lib/base-path";
 
 const LINKS = [
   { href: "/", label: "الرئيسية" },
   { href: "/curriculum", label: "فهرس المنهاج" },
-  { href: "/student", label: "منطقة الطالب" },
   { href: "/exams", label: "الاختبارات" },
   { href: "/lab", label: "المختبر" },
-  { href: "/teacher", label: "منطقة المعلم" },
+  { href: "/math-engine", label: "محرك الرياضيات" },
 ];
 
 export function NavLinks() {
-  const pathname = usePathname();
+  // usePathname يعيد المسار مع basePath على GitHub Pages؛ نزيله قبل المقارنة.
+  const pathname = stripBasePath(usePathname() ?? "/");
   return (
     <nav aria-label="التنقل الرئيسي" className="flex items-center gap-1">
       {LINKS.map((l) => {

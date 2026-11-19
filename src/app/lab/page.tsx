@@ -13,6 +13,7 @@ export default function LabPage() {
         <p className="text-[1.25rem] font-bold">لا توجد أنشطة منشورة بعد</p>
         <p className="mx-auto mt-2 max-w-[34rem] text-ink-soft">
           يُبنى كل نشاط ضمن درسه بعد اعتماد محتوى الدرس، ولا تُضاف محاكاة مستقلة عن دروس الكتاب.
+          الأنشطة القادمة ستعمل في المتصفح مباشرة على هذه المنصة الثابتة.
         </p>
       </div>
     </main>
