@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --color-ink: #16204a;
+  --color-ink-soft: #3b4670;
+  --color-paper: #fbf8f1;
+  --color-brand: #4338ca;
+  --color-brand-soft: #e0e7ff;
+  --color-gold: #f5a524;
+  --color-gold-soft: #fff4d6;
+  --color-mint: #0f9d82;
+  --color-coral: #e5484d;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-size: 17px;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  line-height: 1.85;
+  background-color: var(--color-paper);
+  /* ورق مربعات خفيف يوحي بدفتر الرياضيات */
+  background-image:
+    linear-gradient(to right, rgba(67, 56, 202, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(67, 56, 202, 0.045) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--color-gold-soft);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ───────────── الرياضيات: عزل LTR عن النص العربي ───────────── */
+.math-inline {
+  display: inline-block;
+  direction: ltr;
+  unicode-bidi: isolate;
+  vertical-align: baseline;
+  padding: 0 0.15em;
+}
+.math-block {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}
+.math-block .katex-display {
+  margin: 0.4em 0;
+}
+.katex {
+  font-size: 1.12em;
+}
+
+/* ───────────── علامة المهندس SR (خط KaTeX) ───────────── */
+.eng-mark {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  color: #fff;
+  line-height: 1;
+  background: radial-gradient(circle at 30% 25%, #6d63ff 0%, #4338ca 55%, #2a2290 100%);
+  box-shadow:
+    0 0 0 2px var(--color-gold),
+    0 0 0 3.5px rgba(255, 255, 255, 0.9);
+  direction: ltr;
+}
+.eng-mark .katex {
+  font-size: 1em;
+}
+.eng-mark-sm {
+  width: 2.1rem;
+  height: 2.1rem;
+  font-size: 0.95rem;
+  margin: 0.2rem;
+}
+.eng-mark-md {
+  width: 2.6rem;
+  height: 2.6rem;
+  font-size: 1.15rem;
+  margin: 0.2rem;
+}
+.eng-mark-lg {
+  width: 4rem;
+  height: 4rem;
+  font-size: 1.8rem;
+}
+
+/* ───────────── مكونات مشتركة ───────────── */
+.card {
+  background: #fff;
+  border: 1px solid rgba(22, 32, 74, 0.1);
+  border-radius: 1.1rem;
+  box-shadow: 0 1px 0 rgba(22, 32, 74, 0.04), 0 10px 30px -18px rgba(22, 32, 74, 0.25);
+}
+
+.field {
+  width: 100%;
+  border-radius: 0.7rem;
+  border: 1.5px solid rgba(22, 32, 74, 0.18);
+  background: #fff;
+  padding: 0.6rem 0.85rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+.field:focus {
+  border-color: var(--color-brand);
+  outline: 3px solid var(--color-brand-soft);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  padding: 0.6rem 1.2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn-primary {
+  background: var(--color-brand);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #372fb0;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border: 1.5px solid rgba(22, 32, 74, 0.2);
+}
+.btn-ghost:hover {
+  background: rgba(22, 32, 74, 0.05);
+}
+.btn[disabled] {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
