@@ -1,57 +1,54 @@
 import type { Metadata } from "next";
-import { getStudent } from "@/lib/auth";
-import { db } from "@/db";
-import { lessons, quizAttempts } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import Link from "next/link";
+import { getAllLessons } from "@/content";
 
 export const metadata: Metadata = { title: "الاختبارات" };
-export const dynamic = "force-dynamic";
 
-export default async function ExamsPage() {
-  const student = await getStudent();
-  const attempts = student
-    ? await db
-        .select({
-          id: quizAttempts.id,
-          score: quizAttempts.score,
-          total: quizAttempts.total,
-          createdAt: quizAttempts.createdAt,
-          lesson: lessons.title,
-        })
-        .from(quizAttempts)
-        .innerJoin(lessons, eq(lessons.id, quizAttempts.lessonId))
-        .where(eq(quizAttempts.studentId, student.id))
-        .orderBy(desc(quizAttempts.createdAt))
-        .limit(20)
-    : [];
+export default function ExamsPage() {
+  // الاختبارات موجودة فقط للدروس المعتمدة (published). ولا محتوى معتمد بعد.
+  const quizLessons = getAllLessons().filter(
+    (entry) => entry.lesson.status === "published" && entry.lesson.content?.quiz,
+  );
 
   return (
     <main className="mx-auto max-w-[1100px] px-6 py-10">
       <h1 className="text-[2.2rem] font-bold">الاختبارات</h1>
       <p className="mt-2 text-[1.05rem] text-ink-soft">
-        لكل درس معتمد اختبار خاص به يظهر بعد إكمال محتوى الدرس. تُسجَّل نتائجك ومحاولاتك في منطقة الطالب.
+        لكل درس معتمد اختبار خاص به يعمل ويُصحَّح داخل متصفحك مباشرة، دون إرسال أي بيانات إلى خادم.
       </p>
 
-      <div className="card mt-8 p-10 text-center">
-        <p className="text-[1.25rem] font-bold">لا توجد اختبارات متاحة حاليًا</p>
-        <p className="mx-auto mt-2 max-w-[34rem] text-ink-soft">
-          لم يُعتمد أي درس بعد، ولذلك لا يوجد اختبار لأي درس. ستظهر الاختبارات هنا مع اعتماد الدروس.
-        </p>
-      </div>
-
-      {student && attempts.length > 0 && (
-        <section className="card mt-8 p-6">
-          <h2 className="text-xl font-bold">محاولاتك السابقة</h2>
-          <ul className="mt-3 divide-y divide-ink/10">
-            {attempts.map((a) => (
-              <li key={a.id} className="flex justify-between py-2.5">
-                <span>{a.lesson}</span>
-                <span className="font-semibold tabular-nums">{a.score} / {a.total}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {quizLessons.length === 0 ? (
+        <div className="card mt-8 p-10 text-center">
+          <p className="text-[1.25rem] font-bold">لا توجد اختبارات متاحة حاليًا</p>
+          <p className="mx-auto mt-2 max-w-[34rem] text-ink-soft">
+            لم يُعتمد أي درس بعد، ولذلك لا يوجد اختبار لأي درس. ستظهر الاختبارات هنا مع اعتماد الدروس.
+          </p>
+        </div>
+      ) : (
+        <ul className="mt-8 space-y-4">
+          {quizLessons.map(({ unit, lesson }) => (
+            <li key={lesson.id} className="card flex flex-wrap items-center justify-between gap-4 p-5">
+              <div>
+                <p className="text-[0.9rem] text-ink-soft">الوحدة {unit.number}: {unit.title}</p>
+                <p className="text-[1.1rem] font-semibold">
+                  الدرس {lesson.number}: {lesson.title}
+                </p>
+              </div>
+              <Link href={`/lessons/${lesson.id}#quiz`} className="btn btn-primary">
+                بدء الاختبار
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
+
+      <section className="card mt-8 p-6">
+        <h2 className="text-xl font-bold">كيف تعمل الاختبارات؟</h2>
+        <p className="mt-2 text-ink-soft">
+          تُقدَّم الأسئلة في المتصفح، ويظهر التصحيح فور اختيار الإجابة مع التفسير. لا تُحفظ أي نتائج على
+          خادم، ولا حاجة إلى حساب أو تسجيل دخول.
+        </p>
+      </section>
     </main>
   );
 }

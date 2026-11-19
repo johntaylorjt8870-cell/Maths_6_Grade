@@ -19,8 +19,8 @@ export function Footer() {
 
         <ul className="flex items-center gap-5 text-[0.95rem] text-white/80">
           <li><Link href="/curriculum" className="hover:text-gold">فهرس المنهاج</Link></li>
-          <li><Link href="/student" className="hover:text-gold">منطقة الطالب</Link></li>
           <li><Link href="/exams" className="hover:text-gold">الاختبارات</Link></li>
+          <li><Link href="/lab" className="hover:text-gold">المختبر التفاعلي</Link></li>
         </ul>
 
         <div className="flex flex-col items-start gap-2">
