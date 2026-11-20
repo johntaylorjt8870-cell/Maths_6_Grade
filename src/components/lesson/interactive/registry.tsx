@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import { LineChart } from "@/components/charts/LineChart";
-import { PLOT_DATASETS } from "./datasets";
+import { PLOT_DATASETS, RAIN_DATASET, STUDENTS_DATASET } from "./datasets";
 import { CoordinateGridPlot } from "./CoordinateGridPlot";
 import { FillTableCheck } from "./FillTableCheck";
 import { PlotPointsExercise } from "./PlotPointsExercise";
@@ -80,19 +80,7 @@ export const FIGURE_REGISTRY: Record<string, ReactNode> = {
     />
   ),
   /** تمثيل عدد طلاب الصف السادس 2013–2016 (انطلاقة 2). */
-  "fig-students-chart": (
-    <LineChart
-      xLabels={["2013", "2014", "2015", "2016"]}
-      yTicks={[60, 65, 70, 75]}
-      yMin={57}
-      yMax={78}
-      values={[60, 70, 65, 60]}
-      xAxisLabel="السنة"
-      yAxisLabel="عدد الطلاب"
-      connect
-      ariaLabel="عدد طلاب الصف السادس في السنوات 2013 إلى 2016"
-    />
-  ),
+  "fig-students-chart": <LineChart {...STUDENTS_DATASET} ariaLabel={STUDENTS_DATASET.title} />,
   /** حل «تحقق من فهمك» (أ): تمثيل إنتاج التفاح. */
   "fig-apple-line": (
     <LineChart
@@ -122,17 +110,5 @@ export const FIGURE_REGISTRY: Record<string, ReactNode> = {
     />
   ),
   /** رسم «تدرّب» (2): معدل تساقط الأمطار بالميليمتر في مدينة دمشق. */
-  "fig-rain-chart": (
-    <LineChart
-      xLabels={["تشرين الثاني", "كانون الأول", "كانون الثاني", "شباط", "آذار", "نيسان"]}
-      yTicks={[35, 36, 37, 38, 39, 40]}
-      yMin={34.2}
-      yMax={40.8}
-      values={[36, 38, 40, 37, 38, 35]}
-      xAxisLabel="الشهر"
-      yAxisLabel="المعدل بالميليمتر"
-      connect
-      ariaLabel="معدل تساقط الأمطار بالميليمتر في مدينة دمشق حسب الشهر"
-    />
-  ),
+  "fig-rain-chart": <LineChart {...RAIN_DATASET} ariaLabel={RAIN_DATASET.title} />,
 };

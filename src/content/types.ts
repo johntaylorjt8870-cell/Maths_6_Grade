@@ -82,11 +82,10 @@ export interface ExerciseBlock {
   source?: ContentSource;
 }
 
-/** ملخص الدرس أو عنصر من دفتر الطالب. */
+/** ملخص الدرس — يُنسب كل بند إلى مصدره، لا القائمة المختلطة ككل. */
 export interface SummaryBlock {
   type: "summary";
-  points: string[];
-  source?: ContentSource;
+  points: { text: string; source: ContentSource }[];
 }
 
 export type LessonBlock =
@@ -105,14 +104,14 @@ export type LessonBlock =
 export interface NotebookLine {
   text?: string;
   tex?: Tex;
+  source: ContentSource;
 }
 
-/** فقرة دلالية في دفتر الطالب: عنوان + أسطر. */
+/** فقرة في دفتر الطالب؛ لكل سطر ورسم شارة مصدر مستقلة. */
 export interface NotebookGroup {
   heading: string;
   lines: NotebookLine[];
-  /** تمييز بصري: جزء أساسي ينقله الطالب، أو إثراء اختياري. */
-  source?: ContentSource;
+  figures?: { figureId: string; caption: string; source: ContentSource }[];
 }
 
 /**

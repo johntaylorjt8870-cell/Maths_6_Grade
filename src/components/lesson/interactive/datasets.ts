@@ -64,3 +64,26 @@ export const PLOT_DATASETS: Record<PlotDataset["id"], PlotDataset> = {
     yMax: 41,
   },
 };
+
+// قيم النقاط من خطوط التدريج في ص 3 وص 5؛ انظر docs/lesson-1-1-graph-verification.md.
+export const STUDENTS_DATASET = {
+  title: "عدد طلاب الصف السادس في السنوات 2013 إلى 2016",
+  xAxisLabel: "السنة",
+  yAxisLabel: "عدد الطلاب",
+  xLabels: ["2013", "2014", "2015", "2016"],
+  values: [60, 70, 65, 60],
+  yTicks: [60, 65, 70, 75],
+  yMin: 55,
+  yMax: 80,
+};
+
+export const RAIN_DATASET = {
+  title: "معدل تساقط الأمطار بالميليمتر في مدينة دمشق حسب الشهر",
+  xAxisLabel: "الشهر",
+  yAxisLabel: "المعدل بالميليمتر",
+  xLabels: ["تشرين الثاني", "كانون الأول", "كانون الثاني", "شباط", "آذار", "نيسان"],
+  values: [36, 38, 40, 37, 38, 35],
+  yTicks: [35, 36, 37, 38, 39, 40],
+  yMin: 34,
+  yMax: 40.5,
+};

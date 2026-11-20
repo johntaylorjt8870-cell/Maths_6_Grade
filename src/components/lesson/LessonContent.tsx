@@ -1,49 +1,92 @@
+import { Fragment } from "react";
 import { MathBlock, M } from "@/components/math/Math";
 import { RichText } from "@/components/math/RichText";
 import { LocalQuiz } from "@/components/lesson/LocalQuiz";
 import { SourceTag } from "@/components/lesson/SourceTag";
 import { PrintNotebookButton } from "@/components/lesson/PrintNotebookButton";
 import { ACTIVITY_REGISTRY, EXERCISE_REGISTRY, FIGURE_REGISTRY } from "@/components/lesson/interactive/registry";
-import type { Lesson, LessonBlock, LessonContent as Content, LessonNotebook, Quiz } from "@/content/types";
+import type { ContentSource, FigureBlock, Lesson, LessonBlock, LessonContent as Content, LessonNotebook, Quiz } from "@/content/types";
 
 /**
  * عارض محتوى الدرس — يستقبل كتلًا مُعرَّفة في ملفات المحتوى الثابتة.
  * الكتل التفاعلية تُربط بمكوناتها عبر السجلّات، وتعمل في المتصفح فقط.
  */
 export function LessonContent({ lesson, content }: { lesson: Lesson; content: Content }) {
+  // يغلق الاختبار مرحلة التطبيق، ثم يراجع الطالب الملخص وينقل الدفتر.
+  const summaryIndex = content.sections.findIndex((section) => section.id === "summary");
+  const quiz = content.quiz && <LessonQuiz quiz={content.quiz} lessonTitle={lesson.title} />;
+
   return (
     <article className="mt-8 space-y-6">
-      {content.sections.map((section) => (
-        <section key={section.id} id={section.id} className="card scroll-mt-24 p-6" aria-labelledby={`sec-${section.id}`}>
-          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 pb-3">
-            <h2 id={`sec-${section.id}`} className="text-xl font-bold">
-              {section.title}
-            </h2>
-            {section.source && <SourceTag source={section.source} />}
-          </div>
-          <div className="mt-4 space-y-4">
-            {section.blocks.map((block, i) => (
-              <Block key={i} block={block} />
-            ))}
-          </div>
-        </section>
+      {content.sections.map((section, index) => (
+        <Fragment key={section.id}>
+          {index === summaryIndex && quiz}
+          <section id={section.id} className="card scroll-mt-56 p-3 sm:p-6 lg:scroll-mt-24" aria-labelledby={`sec-${section.id}`}>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 pb-3">
+              <h2 id={`sec-${section.id}`} className="text-xl font-bold">
+                {section.title}
+              </h2>
+              {section.source && <SourceTag source={section.source} />}
+            </div>
+            <div className="mt-4 space-y-4">
+              {section.blocks.map((block, i) => (
+                <Block key={i} block={block} />
+              ))}
+            </div>
+          </section>
+        </Fragment>
       ))}
-
-      {content.quiz && <LessonQuiz quiz={content.quiz} lessonTitle={lesson.title} />}
+      {summaryIndex === -1 && quiz}
       {content.notebook && <Notebook notebook={content.notebook} lessonTitle={lesson.title} />}
     </article>
   );
 }
 
 /** غلاف موحّد لكل كتلة: يعرض شارة المصدر «من الكتاب»/«إثراء». */
-function BlockShell({ source, children }: { source?: "book" | "extra"; children: React.ReactNode }) {
+function BlockShell({ source, children }: { source?: ContentSource; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-end">
-        <SourceTag source={source ?? "book"} />
-      </div>
+      {source && (
+        <div className="flex items-center justify-end">
+          <SourceTag source={source} />
+        </div>
+      )}
       {children}
     </div>
+  );
+}
+
+/** رسم واحد يُستخدم في الدرس وفي الدفتر؛ عنوانه مرئي ويُطبع معه. */
+function LessonFigure({ figureId, caption, source }: Omit<FigureBlock, "type">) {
+  const figure = FIGURE_REGISTRY[figureId];
+  return (
+    <figure className="lesson-figure rounded-xl border border-ink/10 bg-white p-2 sm:p-3" data-figure={figureId}>
+      {(caption || source) && (
+        <figcaption className="mb-2 flex flex-wrap items-baseline justify-between gap-2 text-[0.95rem] font-semibold text-ink">
+          {caption && <span>{caption}</span>}
+          {source && <SourceTag source={source} />}
+        </figcaption>
+      )}
+      {figure ? (
+        <>
+          <div className="lesson-figure-scroll overflow-x-auto" dir="ltr" tabIndex={0} role="region" aria-label={caption ?? "الرسم البياني"}>
+            <div className="lesson-figure-canvas mx-auto min-w-[296px] max-w-[620px]">{figure}</div>
+          </div>
+          <p className="lesson-figure-scroll-hint no-print mt-1 text-xs text-ink-soft">مرّر الرسم أفقيًا لتظهر بقية التدريجات.</p>
+        </>
+      ) : (
+        <p className="rounded-lg bg-paper/60 p-4 text-ink-soft">رسم غير مسجّل: {figureId}</p>
+      )}
+    </figure>
+  );
+}
+
+function SourcedLine({ source, children }: { source: ContentSource; children: React.ReactNode }) {
+  return (
+    <li className="sourced-line">
+      <span className="me-2"><SourceTag source={source} /></span>
+      {children}
+    </li>
   );
 }
 
@@ -143,77 +186,62 @@ function Block({ block }: { block: LessonBlock }) {
         </BlockShell>
       );
 
-    case "figure": {
-      const figure = FIGURE_REGISTRY[block.figureId];
-      return (
-        <BlockShell source={block.source}>
-          <figure className="rounded-xl border border-ink/10 bg-white p-3">
-            {figure ? (
-              <div className="mx-auto max-w-[600px]">{figure}</div>
-            ) : (
-              <div className="grid place-items-center rounded-lg bg-paper/60 p-6 text-ink-soft">
-                <span className="text-[0.9rem]">رسم توضيحي: {block.figureId}</span>
-              </div>
-            )}
-            {block.caption && (
-              <figcaption className="mt-2 text-center text-[0.9rem] text-ink-soft">
-                {block.caption}
-              </figcaption>
-            )}
-          </figure>
-        </BlockShell>
-      );
-    }
+    case "figure":
+      return <LessonFigure figureId={block.figureId} caption={block.caption} source={block.source} />;
 
     case "activity": {
       const Activity = ACTIVITY_REGISTRY[block.activityId];
       return (
-        <BlockShell source={block.source}>
-          <div className="rounded-xl border border-emerald-500/25 bg-emerald-50/50 p-4">
-            {block.prompt && (
-              <p className="mb-3 text-[1rem] font-semibold leading-[1.9] text-emerald-900">
-                <RichText text={block.prompt} />
-              </p>
-            )}
-            {Activity ? (
-              <Activity />
-            ) : (
-              <p className="text-[0.9rem] text-amber-800">نشاط غير مسجّل: {block.activityId}</p>
-            )}
-          </div>
-        </BlockShell>
+        <div className="rounded-xl border border-emerald-500/25 bg-emerald-50/50 p-4">
+          {block.prompt && (
+            <p className="mb-3 text-[1rem] font-semibold leading-[1.9] text-emerald-900">
+              {block.source && <span className="me-2"><SourceTag source={block.source} /></span>}
+              <RichText text={block.prompt} />
+            </p>
+          )}
+          {block.source !== "extra" && (
+            <p className="mb-2 text-sm text-ink-soft">التفاعل والتصحيح <SourceTag source="extra" /></p>
+          )}
+          {Activity ? (
+            <Activity />
+          ) : (
+            <p className="text-[0.9rem] text-amber-800">نشاط غير مسجّل: {block.activityId}</p>
+          )}
+        </div>
       );
     }
 
     case "exercise": {
       const Exercise = EXERCISE_REGISTRY[block.exerciseId];
       return (
-        <BlockShell source={block.source}>
-          <div className="rounded-xl border border-gold/40 bg-gold-soft/30 p-4">
-            {Exercise ? (
-              <Exercise />
-            ) : (
-              <p className="text-[0.9rem] text-amber-800">تمرين غير مسجّل: {block.exerciseId}</p>
-            )}
-          </div>
-        </BlockShell>
+        <div className="rounded-xl border border-gold/40 bg-gold-soft/30 p-4">
+          {block.source === "book" ? (
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-ink-soft">
+              <span>الأسئلة <SourceTag source="book" /></span>
+              <span>الخيارات والتصحيح <SourceTag source="extra" /></span>
+            </div>
+          ) : block.source && <SourceTag source={block.source} />}
+          {Exercise ? (
+            <Exercise />
+          ) : (
+            <p className="text-[0.9rem] text-amber-800">تمرين غير مسجّل: {block.exerciseId}</p>
+          )}
+        </div>
       );
     }
 
     case "summary":
       return (
-        <BlockShell source={block.source}>
-          <div className="rounded-xl border border-ink/10 bg-white p-4">
-            <h3 className="font-bold">خلاصة الدرس</h3>
-            <ul className="mt-2 list-inside list-disc space-y-1.5 text-[1rem] leading-[1.9] text-ink-soft">
-              {block.points.map((point, i) => (
-                <li key={i}>
-                  <RichText text={point} />
-                </li>
-              ))}
-            </ul>
-          </div>
-        </BlockShell>
+        <div className="rounded-xl border border-ink/10 bg-white p-4">
+          <h3 className="font-bold">خلاصة الدرس</h3>
+          <ul className="mt-2 space-y-2.5 text-[1rem] leading-[1.9] text-ink-soft">
+            {block.points.map((point, i) => (
+              <SourcedLine key={i} source={point.source}>
+                <RichText text={point.text} />
+              </SourcedLine>
+            ))}
+          </ul>
+        </div>
       );
 
     default:
@@ -223,11 +251,12 @@ function Block({ block }: { block: LessonBlock }) {
 
 function LessonQuiz({ quiz, lessonTitle }: { quiz: Quiz; lessonTitle: string }) {
   return (
-    <section id="quiz" className="card scroll-mt-24 p-6">
+    <section id="quiz" className="card scroll-mt-56 p-3 sm:p-6 lg:scroll-mt-24">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 pb-3">
         <h2 className="text-xl font-bold">{quiz.title ?? `اختبار الدرس: ${lessonTitle}`}</h2>
-        <SourceTag source="book" />
+        <SourceTag source="extra" />
       </div>
+      <p className="mt-3 text-sm text-ink-soft">اختبار من إعداد المنصة اعتمادًا على الدرس، وليس من نص الكتاب.</p>
       <LocalQuiz quiz={quiz} />
     </section>
   );
@@ -236,7 +265,7 @@ function LessonQuiz({ quiz, lessonTitle }: { quiz: Quiz; lessonTitle: string }) 
 /** دفتر الطالب — كل ما ينقله الطالب إلى دفتره، مع زر طباعة يقصر النشر على هذا القسم. */
 function Notebook({ notebook, lessonTitle }: { notebook: LessonNotebook; lessonTitle: string }) {
   return (
-    <section id="notebook" className="card notebook-print scroll-mt-24 p-6" aria-labelledby="notebook-title">
+    <section id="notebook" className="card notebook-print scroll-mt-56 p-3 sm:p-6 lg:scroll-mt-24" aria-labelledby="notebook-title">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-brand/25 pb-4">
         <div>
           <p className="text-[0.82rem] font-bold uppercase tracking-wide text-brand">دفتر الطالب</p>
@@ -250,26 +279,25 @@ function Notebook({ notebook, lessonTitle }: { notebook: LessonNotebook; lessonT
       {notebook.intro && <p className="mt-4 text-[0.98rem] leading-[1.95] text-ink">{notebook.intro}</p>}
       <div className="mt-4 space-y-5">
         {notebook.groups.map((group, gi) => (
-          <div key={gi} className="rounded-xl border border-ink/10 bg-paper/50 p-4">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="font-bold text-ink">{group.heading}</h3>
-              <SourceTag source={group.source ?? "book"} />
-            </div>
-            <ul className="mt-2 space-y-1.5">
+          <div key={gi} className="notebook-group rounded-xl border border-ink/10 bg-paper/50 p-2 sm:p-4">
+            <h3 className="font-bold text-ink">{group.heading}</h3>
+            <ul className="mt-2 space-y-2.5 text-[0.98rem] leading-[1.95] text-ink">
               {group.lines.map((line, li) => (
-                <li key={li} className="flex flex-wrap items-baseline gap-2 text-[0.98rem] leading-[1.95] text-ink">
-                  <span aria-hidden="true" className="text-brand">◦</span>
-                  <span className="min-w-0 flex-1">
-                    {line.text && <RichText text={line.text} />}
-                    {line.tex && (
-                      <span className="math-inline" dir="ltr">
-                        <M tex={line.tex} />
-                      </span>
-                    )}
-                  </span>
-                </li>
+                <SourcedLine key={li} source={line.source}>
+                  {line.text && <RichText text={line.text} />}
+                  {line.tex && (
+                    <span className="math-inline" dir="ltr">
+                      <M tex={line.tex} />
+                    </span>
+                  )}
+                </SourcedLine>
               ))}
             </ul>
+            {group.figures && (
+              <div className="mt-3 space-y-3">
+                {group.figures.map((figure) => <LessonFigure key={figure.figureId} {...figure} />)}
+              </div>
+            )}
           </div>
         ))}
       </div>

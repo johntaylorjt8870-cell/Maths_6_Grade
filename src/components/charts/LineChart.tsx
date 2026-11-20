@@ -24,11 +24,11 @@ export interface LineChartProps {
 }
 
 const W = 620;
-const H = 360;
+const H = 380;
 const ML = 64; // هامش يساري للمحور الشاقولي
 const MR = 26;
-const MT = 22;
-const MB = 64;
+const MT = 48;
+const MB = 76;
 const PLOT_W = W - ML - MR;
 const PLOT_H = H - MT - MB;
 
@@ -54,6 +54,7 @@ export function LineChart({
   const yAt = (v: number) => MT + ((yMax - v) / (yMax - yMin)) * PLOT_H;
   const baseY = MT + PLOT_H;
   const rightX = ML + PLOT_W;
+  const cropped = yMin > 0;
 
   const points = values.map((v, i) => [xAt(i), yAt(v)] as const);
   const polyline = points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
@@ -61,24 +62,19 @@ export function LineChart({
   return (
     <svg
       viewBox={`0 0 ${W} ${H}`}
-      className={className}
+      className={`block w-full ${className ?? ""}`}
       role="img"
       aria-label={ariaLabel ?? "مخطط خطي"}
       style={{ maxWidth: "100%", height: "auto", direction: "ltr" }}
     >
-      <defs>
-        <marker id="axis-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M 0 0 L 10 5 L 0 10 z" fill={AXIS} />
-        </marker>
-      </defs>
-
       {/* الشبكة الأفقية المتقطعة + تدريجات المحور الشاقولي */}
       {yTicks.map((t) => {
         const y = yAt(t);
         return (
           <g key={`y-${t}`}>
             <line x1={ML} y1={y} x2={rightX} y2={y} stroke={GRID} strokeWidth={1.4} strokeDasharray="7 6" />
-            <text x={ML - 10} y={y + 5} textAnchor="end" fontSize={15} fill="#3b4670" className="tabular-nums">
+            <line x1={ML - 5} y1={y} x2={ML} y2={y} stroke={AXIS} strokeWidth={1.6} />
+            <text x={ML - 10} y={y + 5} textAnchor="end" fontSize={16} fill="#3b4670" className="tabular-nums">
               {t}
             </text>
           </g>
@@ -91,24 +87,38 @@ export function LineChart({
         return (
           <g key={`x-${i}`}>
             <line x1={x} y1={MT} x2={x} y2={baseY} stroke={GRID} strokeWidth={1.4} strokeDasharray="7 6" />
-            <text x={x} y={baseY + 22} textAnchor="middle" fontSize={13.5} fill="#3b4670">
-              {label}
+            <line x1={x} y1={baseY} x2={x} y2={baseY + 5} stroke={AXIS} strokeWidth={1.6} />
+            <text x={x} y={baseY + 24} textAnchor="middle" fontSize={16} fill="#3b4670">
+              {label.split(" ").map((word, j) => (
+                <tspan key={j} x={x} dy={j === 0 ? 0 : 18}>{word}</tspan>
+              ))}
             </text>
           </g>
         );
       })}
 
-      {/* المحوران مع رأس سهم */}
-      <line x1={ML} y1={baseY} x2={rightX + 14} y2={baseY} stroke={AXIS} strokeWidth={2.4} markerEnd="url(#axis-arrow)" />
-      <line x1={ML} y1={baseY} x2={ML} y2={MT - 10} stroke={AXIS} strokeWidth={2.4} markerEnd="url(#axis-arrow)" />
-      <text x={ML - 10} y={baseY + 4} textAnchor="end" fontSize={15} fill={AXIS}>O</text>
+      {/* محوران وسهمان بلا معرّفات مشتركة بين نسخ الرسم في الدرس والدفتر. */}
+      <line x1={ML} y1={baseY} x2={rightX + 14} y2={baseY} stroke={AXIS} strokeWidth={2.4} />
+      <path d={`M ${rightX + 16} ${baseY} l -11 -5 v 10 z`} fill={AXIS} />
+      <path
+        d={cropped
+          ? `M ${ML} ${baseY} v -7 l -4 -4 l 8 -4 l -4 -4 V ${MT - 11}`
+          : `M ${ML} ${baseY} V ${MT - 11}`}
+        stroke={AXIS}
+        strokeWidth={2.4}
+        fill="none"
+      />
+      <path d={`M ${ML} ${MT - 13} l -5 11 h 10 z`} fill={AXIS} />
+      {!cropped && yMin === 0 && (
+        <text x={ML - 10} y={baseY + 5} textAnchor="end" fontSize={16} fill={AXIS}>0</text>
+      )}
       {xAxisLabel && (
-        <text x={W - 6} y={baseY + 44} textAnchor="end" fontSize={14} fill={AXIS}>
+        <text x={rightX} y={baseY + 63} textAnchor="end" fontSize={16} fill={AXIS}>
           {xAxisLabel}
         </text>
       )}
       {yAxisLabel && (
-        <text x={W - 8} y={MT - 8} textAnchor="end" fontSize={13.5} fill={AXIS}>
+        <text x={ML + PLOT_W / 2} y={22} textAnchor="middle" fontSize={17} fill={AXIS}>
           {yAxisLabel}
         </text>
       )}

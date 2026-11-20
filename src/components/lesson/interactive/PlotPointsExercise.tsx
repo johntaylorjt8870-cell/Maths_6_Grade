@@ -157,8 +157,15 @@ export function PlotPointsExercise({ datasetId }: { datasetId: PlotDataset["id"]
         })}
         {/* المحوران */}
         <line x1={ML} y1={baseY} x2={rightX + 12} y2={baseY} stroke={AXIS} strokeWidth={2.3} />
-        <line x1={ML} y1={baseY} x2={ML} y2={MT - 8} stroke={AXIS} strokeWidth={2.3} />
-        <text x={ML - 8} y={baseY + 4} textAnchor="end" fontSize={13} fill={AXIS}>O</text>
+        <path
+          d={ds.yMin > 0
+            ? `M ${ML} ${baseY} v -7 l -4 -4 l 8 -4 l -4 -4 V ${MT - 8}`
+            : `M ${ML} ${baseY} V ${MT - 8}`}
+          fill="none"
+          stroke={AXIS}
+          strokeWidth={2.3}
+        />
+        {ds.yMin === 0 && <text x={ML - 8} y={baseY + 4} textAnchor="end" fontSize={13} fill={AXIS}>0</text>}
         {ds.xAxisLabel && (
           <text x={W - 6} y={baseY + 44} textAnchor="end" fontSize={13} fill={AXIS}>{ds.xAxisLabel}</text>
         )}

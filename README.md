@@ -135,7 +135,10 @@ content: {
         { type: "figure", figureId: "fig-1", caption: "شكل توضيحي (يُسجَّل في FIGURE_REGISTRY)" },
         { type: "activity", activityId: "act-1", prompt: "جرّب القيم (يُسجَّل في ACTIVITY_REGISTRY)" },
         { type: "exercise", exerciseId: "ex-1" },
-        { type: "summary", points: ["خلاصة أولى", "خلاصة ثانية"] },
+        { type: "summary", points: [
+          { text: "خلاصة من نص الدرس", source: "book" },
+          { text: "إضافة تعليمية من المنصة", source: "extra" },
+        ] },
       ],
     },
   ],
@@ -143,7 +146,11 @@ content: {
     title: "دفتر الطالب — عنوان الدرس",
     intro: "…",
     groups: [
-      { heading: "1) …", source: "book", lines: [{ text: "…" }, { tex: "a^2+b^2=c^2" }] },
+      {
+        heading: "1) …",
+        lines: [{ text: "…", source: "book" }, { tex: "a^2+b^2=c^2", source: "extra" }],
+        figures: [{ figureId: "fig-1", caption: "عنوان الرسم القابل للطباعة", source: "book" }],
+      },
     ],
   },
   quiz: {
@@ -168,9 +175,9 @@ content: {
 
 ملاحظات تنفيذية:
 
-- كل كتلة تقبل `source: "book" | "extra"` (افتراضيًا `book`) وتُعرض بشريط «من الكتاب» أو «إثراء».
-- تُسجَّل معرّفات الرسوم والأنشطة والتمارين في `src/components/lesson/interactive/registry.tsx`؛ أي معرّف غير مسجّل لا يُكسر البناء، بل يظهر كعنصر نائب واضح.
-- قسم `notebook` يُعرض في نهاية الدرس مع زر «طباعة الدفتر» (يطبع هذا القسم فقط عبر `@media print`).
+- شارة `source: "book" | "extra"` تميّز «من الكتاب» عن «إثراء». في الملخص والدفتر لكل بند أو رسم مصدر صريح؛ لا توضع شارة «من الكتاب» على محتوى مختلط. اختبار الدرس من إعداد المنصة ويُوسم «إثراء».
+- تُسجَّل معرّفات الرسوم والأنشطة والتمارين في `src/components/lesson/interactive/registry.tsx`. يَستخدم الدفتر رسوم SVG نفسها؛ يُطبع النص والرسوم معًا عند الضغط على «طباعة الدفتر»، دون باقي الدرس.
+- مواضع نقاط رسم الطلاب وأمطار دمشق على صور الكتاب موثّقة في [جدول التدقيق](docs/lesson-1-1-graph-verification.md).
 - النصوص تقبل `**عريض**` إضافةً إلى تعابير `$...$`.
 
 ---

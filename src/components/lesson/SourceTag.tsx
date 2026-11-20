@@ -5,10 +5,11 @@ import type { ContentSource } from "@/content/types";
  * - «من الكتاب»: محتوى منقول عن صفحات الكتاب المدرسي (أخضر/كتاب).
  * - «إثراء»: إضافة تعليمية من المنصة موسومة بوضوح (كهرماني/شعلة).
  */
-export function SourceTag({ source, className = "" }: { source?: ContentSource; className?: string }) {
+export function SourceTag({ source, className = "" }: { source: ContentSource; className?: string }) {
   const isExtra = source === "extra";
   return (
     <span
+      data-source={source}
       className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[0.72rem] font-bold ring-1 ring-inset ${
         isExtra
           ? "bg-amber-50 text-amber-800 ring-amber-300"

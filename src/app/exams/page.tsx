@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SourceTag } from "@/components/lesson/SourceTag";
 import { getAllLessons } from "@/content";
 
 export const metadata: Metadata = { title: "الاختبارات" };
 
 export default function ExamsPage() {
-  // الاختبارات موجودة فقط للدروس المعتمدة (published). ولا محتوى معتمد بعد.
+  // اختبارات المنصة متاحة للدروس المعتمدة (published) فقط.
   const quizLessons = getAllLessons().filter(
     (entry) => entry.lesson.status === "published" && entry.lesson.content?.quiz,
   );
@@ -33,6 +34,7 @@ export default function ExamsPage() {
                 <p className="text-[1.1rem] font-semibold">
                   الدرس {lesson.number}: {lesson.title}
                 </p>
+                <p className="mt-1 text-sm text-ink-soft">اختبار من إعداد المنصة <SourceTag source="extra" /></p>
               </div>
               <Link href={`/lessons/${lesson.id}#quiz`} className="btn btn-primary">
                 بدء الاختبار
@@ -45,7 +47,7 @@ export default function ExamsPage() {
       <section className="card mt-8 p-6">
         <h2 className="text-xl font-bold">كيف تعمل الاختبارات؟</h2>
         <p className="mt-2 text-ink-soft">
-          تُقدَّم الأسئلة في المتصفح، ويظهر التصحيح فور اختيار الإجابة مع التفسير. لا تُحفظ أي نتائج على
+          تُقدَّم الأسئلة في المتصفح، ويظهر التصحيح مع التفسير فور الضغط على «تصحيح الإجابات». لا تُحفظ أي نتائج على
           خادم، ولا حاجة إلى حساب أو تسجيل دخول.
         </p>
       </section>
