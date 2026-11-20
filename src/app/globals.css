@@ -171,3 +171,84 @@ textarea {
     animation: none !important;
   }
 }
+
+/* يبقى عرض الرسم داخل بطاقته، مع تمرير محلي عند ضيق المساحة. */
+.lesson-figure {
+  container-type: inline-size;
+}
+
+.lesson-figure-scroll-hint {
+  display: none;
+}
+
+@container (width < 425px) {
+  .lesson-figure-canvas svg text {
+    font-size: 20px;
+  }
+}
+
+@container (width < 296px) {
+  .lesson-figure-scroll-hint {
+    display: block;
+  }
+}
+
+/* دفتر الطالب في تدفّق الصفحات الطبيعي: لا مساحات فارغة لباقي الدرس. */
+@media print {
+  body:has(.notebook-print) > :not(:has(.notebook-print)),
+  main:has(.notebook-print) > :not(:has(.notebook-print)),
+  article:has(> .notebook-print) > :not(.notebook-print),
+  .no-print {
+    display: none !important;
+  }
+
+  body:has(.notebook-print) {
+    display: block;
+    min-height: 0;
+    background: #fff;
+  }
+
+  main:has(.notebook-print),
+  article:has(> .notebook-print),
+  .notebook-print {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .notebook-print {
+    border: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .notebook-group {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .notebook-print h2,
+  .notebook-print h3 {
+    break-after: avoid-page;
+  }
+
+  .notebook-print .sourced-line,
+  .notebook-print .lesson-figure {
+    break-inside: avoid-page;
+  }
+
+  .notebook-print .sourced-line {
+    font-size: 11pt;
+    line-height: 1.65;
+  }
+
+  .notebook-print .lesson-figure-scroll {
+    overflow: visible;
+  }
+
+  .notebook-print .lesson-figure-canvas {
+    min-width: 0;
+    max-width: 130mm;
+  }
+}

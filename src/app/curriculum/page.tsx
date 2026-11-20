@@ -1,97 +1,98 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import { StatusBadge } from "@/components/ui/StatusBadge";
+import Link from "next/link";
 import { curriculumStats, getCurriculum } from "@/content";
 
-export const metadata: Metadata = { title: "فهرس المنهاج" };
+export const metadata: Metadata = {
+  title: "فهرس المنهاج",
+  description: "الوحدات والدروس بترتيب الكتاب المدرسي، مع حالة كل درس على المنصة.",
+};
 
+/**
+ * فهرس المنهاج — وحدات الكتاب كبطاقات.
+ * الضغط على بطاقة الوحدة يفتح صفحة الوحدة وفيها بطاقات دروسها بالترتيب.
+ */
 export default function CurriculumPage() {
   const data = getCurriculum();
   const stats = curriculumStats(data);
 
   return (
-    <main className="mx-auto max-w-[1100px] px-6 py-10">
+    <main className="mx-auto max-w-[1200px] px-6 py-10">
       <h1 className="text-[2.2rem] font-bold">فهرس المنهاج</h1>
-      <p className="mt-2 text-[1.05rem] text-ink-soft">
-        الوحدات والدروس بترتيب الكتاب المدرسي. لا يُفتح درس للدراسة إلا بعد إعداد محتواه واعتماده.
+      <p className="mt-2 max-w-[46rem] text-[1.05rem] leading-[1.9] text-ink-soft">
+        وحدات كتاب الرياضيات للصف السادس (المنهاج السوري) كما وردت في فهرس الكتاب، بالترتيب نفسه.
+        افتح أي وحدة لترى دروسها بحالتها — لا يُعرض محتوى أي درس قبل إعداده من صفحات الكتاب واعتماده.
       </p>
 
-      {data.length === 0 ? (
-        <div className="card mt-8 p-10 text-center">
-          <p className="text-[1.25rem] font-bold">بانتظار فهرس المنهاج</p>
-          <p className="mx-auto mt-2 max-w-[34rem] text-ink-soft">
-            لم يُضف فهرس الكتاب إلى المنصة بعد. فور إضافته ستظهر هنا الوحدات والدروس بحالتها.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="mt-6 flex flex-wrap gap-3 text-[0.95rem] text-ink-soft">
-            <span className="rounded-full bg-white px-4 py-1 ring-1 ring-inset ring-ink/10">
-              الوحدات: <b className="text-brand tabular-nums">{stats.units}</b>
-            </span>
-            <span className="rounded-full bg-white px-4 py-1 ring-1 ring-inset ring-ink/10">
-              الدروس: <b className="text-brand tabular-nums">{stats.lessons}</b>
-            </span>
-            <span className="rounded-full bg-white px-4 py-1 ring-1 ring-inset ring-ink/10">
-              المكتملة: <b className="text-brand tabular-nums">{stats.published}</b>
-            </span>
-          </div>
+      <div className="mt-6 flex flex-wrap gap-3 text-[0.95rem] text-ink-soft">
+        <span className="rounded-full bg-white px-4 py-1 ring-1 ring-inset ring-ink/10">
+          الوحدات: <b className="text-brand tabular-nums">{stats.units}</b>
+        </span>
+        <span className="rounded-full bg-white px-4 py-1 ring-1 ring-inset ring-ink/10">
+          الدروس في الفهرس: <b className="text-brand tabular-nums">{stats.lessons}</b>
+        </span>
+        <span className="rounded-full bg-white px-4 py-1 ring-1 ring-inset ring-ink/10">
+          الدروس المكتملة: <b className="text-brand tabular-nums">{stats.published}</b>
+        </span>
+      </div>
 
-          <div className="mt-6 space-y-6">
-            {data.map((unit) => (
-              <section key={unit.id} className="card overflow-hidden">
-                <h2 className="flex items-center gap-3 border-b border-ink/10 bg-brand-soft/60 px-6 py-4 text-[1.3rem] font-bold">
-                  <span className="grid h-9 min-w-9 place-items-center rounded-full bg-brand px-2 text-[1rem] text-white tabular-nums">
-                    {unit.number}
-                  </span>
-                  <span>
-                    الوحدة {unit.number}: {unit.title}
-                  </span>
-                </h2>
-                {unit.summary && (
-                  <p className="border-b border-ink/10 px-6 py-3 text-[0.98rem] text-ink-soft">
-                    {unit.summary}
-                  </p>
-                )}
-                {unit.lessons.length === 0 ? (
-                  <p className="px-6 py-4 text-ink-soft">لا توجد دروس مضافة لهذه الوحدة في الفهرس بعد.</p>
-                ) : (
-                  <ul className="divide-y divide-ink/10">
-                    {unit.lessons.map((lesson) => (
-                      <li
-                        key={lesson.id}
-                        className="flex flex-wrap items-center justify-between gap-3 px-6 py-3.5"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="w-7 text-center font-semibold text-ink-soft tabular-nums">
-                            {lesson.number}
-                          </span>
-                          <Link
-                            href={`/lessons/${lesson.id}`}
-                            className={`text-[1.05rem] hover:underline ${
-                              lesson.status === "published"
-                                ? "font-semibold text-brand"
-                                : "font-medium text-ink-soft"
-                            }`}
-                          >
-                            {lesson.title}
-                          </Link>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {lesson.pageRange && (
-                            <span className="text-[0.85rem] text-ink-soft">ص {lesson.pageRange}</span>
-                          )}
-                          <StatusBadge status={lesson.status} />
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </section>
-            ))}
-          </div>
-        </>
-      )}
+      <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        {data.map((unit) => {
+          const published = unit.lessons.filter((l) => l.status === "published").length;
+          const accent = unit.accent ?? "#4338ca";
+          const firstPage = unit.lessons[0]?.pageRange?.split("-")[0] ?? "—";
+          const lastLesson = unit.lessons[unit.lessons.length - 1];
+          const lastPage = lastLesson?.pageRange?.split("-").pop() ?? "—";
+          return (
+            <Link
+              key={unit.id}
+              href={`/curriculum/${unit.id}`}
+              aria-label={`افتح ${unit.title} — ${unit.lessons.length} دروس`}
+              className="card group relative flex flex-col overflow-hidden p-6 transition-transform hover:-translate-y-1 focus-visible:-translate-y-1"
+            >
+              {/* شريط التمييز العلوي */}
+              <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1.5" style={{ background: accent }} />
+              <div className="flex items-start justify-between gap-3">
+                <div
+                  className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl text-[1.7rem] font-bold text-white tabular-nums shadow-sm"
+                  style={{ background: `linear-gradient(145deg, ${accent}, ${accent}cc)` }}
+                >
+                  {unit.number}
+                </div>
+                <span
+                  className="rounded-full px-3 py-1 text-[0.78rem] font-bold"
+                  style={{ background: unit.tint ?? "#eef0ff", color: accent }}
+                >
+                  {unit.lessons.length} دروس
+                </span>
+              </div>
+              <h2 className="mt-4 text-[1.35rem] font-bold leading-snug">{unit.title}</h2>
+              {unit.summary && (
+                <p className="mt-1.5 line-clamp-2 text-[0.93rem] leading-[1.8] text-ink-soft">{unit.summary}</p>
+              )}
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
+                <div className="text-[0.83rem] text-ink-soft">
+                  <span className="block">صفحات الكتاب: <b className="tabular-nums text-ink">{firstPage}–{lastPage}</b></span>
+                  <span className="mt-0.5 block">المكتمل: <b className="tabular-nums text-emerald-700">{published}</b> من {unit.lessons.length}</span>
+                </div>
+                <span
+                  className="inline-flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[0.9rem] font-bold text-white transition-transform group-hover:-translate-x-0.5"
+                  style={{ background: accent }}
+                >
+                  دروس الوحدة
+                  <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                    <path d="M10 3 5 8l5 5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      <p className="mt-8 text-[0.9rem] text-ink-soft">
+        ترتيب الوحدات والدروس وصفحات بدايتها كما وردت في فهرس الكتاب (ص 2). تُضاف دروس كل وحدة تباعًا مع وصول
+        صور صفحاتها واعتماد محتواها.
+      </p>
     </main>
   );
 }

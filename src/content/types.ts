@@ -12,10 +12,19 @@ export type Tex = string;
 
 /* ───────────── كتل محتوى الدرس (هيكل جاهز، بلا محتوى الآن) ───────────── */
 
+/**
+ * مصدر الكتلة التعليمية:
+ * - `book`: منقول حرفيًا أو بتصرّف أمين عن صفحات الكتاب المدرسي.
+ * - `extra`: إثراء تعليمي مضاف من المنصة (شرح موسّع، أخطاء شائعة، مقارنات)
+ *   لا يغيّر المعلومة العلمية، ويُميَّز بصريًا في العرض.
+ */
+export type ContentSource = "book" | "extra";
+
 /** نص شرح عربي، مع إمكانية تضمين تعابير رياضية داخلية بين $...$. */
 export interface TextBlock {
   type: "text";
   text: string;
+  source?: ContentSource;
 }
 
 /** معادلة مستقلة في سطرها. */
@@ -24,6 +33,7 @@ export interface FormulaBlock {
   tex: Tex;
   /** شرح مختصر للمعادلة (اختياري). */
   note?: string;
+  source?: ContentSource;
 }
 
 /** مثال محلول خطوة بخطوة. */
@@ -36,6 +46,17 @@ export interface ExampleBlock {
     /** معادلة الخطوة (اختياري). */
     tex?: Tex;
   }[];
+  source?: ContentSource;
+}
+
+/** جدول بيانات (يُعرض كجدول HTML حقيقي، وليس صورة). */
+export interface TableBlock {
+  type: "table";
+  /** رأس الجدول — الخلية الأولى غالبًا عنوان العمود الجانبي (مثل «اليوم»). */
+  headers: string[];
+  rows: string[][];
+  caption?: string;
+  source?: ContentSource;
 }
 
 /** رسم أو مخطط SVG يُسجَّل بمعرّف في سجل الرسوم. */
@@ -43,6 +64,7 @@ export interface FigureBlock {
   type: "figure";
   figureId: string;
   caption?: string;
+  source?: ContentSource;
 }
 
 /** نشاط أو محاكاة تفاعلية تُسجَّل بمعرّف في سجل الأنشطة (تعمل في المتصفح). */
@@ -50,34 +72,65 @@ export interface ActivityBlock {
   type: "activity";
   activityId: string;
   prompt?: string;
+  source?: ContentSource;
 }
 
 /** تمرين مع تصحيح فوري في المتصفح (مُعرَّف في سجل الاختبارات المحلية). */
 export interface ExerciseBlock {
   type: "exercise";
   exerciseId: string;
+  source?: ContentSource;
 }
 
-/** ملخص الدرس أو عنصر من دفتر الطالب. */
+/** ملخص الدرس — يُنسب كل بند إلى مصدره، لا القائمة المختلطة ككل. */
 export interface SummaryBlock {
   type: "summary";
-  points: string[];
+  points: { text: string; source: ContentSource }[];
 }
 
 export type LessonBlock =
   | TextBlock
   | FormulaBlock
   | ExampleBlock
+  | TableBlock
   | FigureBlock
   | ActivityBlock
   | ExerciseBlock
   | SummaryBlock;
+
+/* ───────────── دفتر الطالب ───────────── */
+
+/** عنصر واحد داخل فقرة دفتر الطالب: نص عربي (قد يضم $...$) أو معادلة LaTeX. */
+export interface NotebookLine {
+  text?: string;
+  tex?: Tex;
+  source: ContentSource;
+}
+
+/** فقرة في دفتر الطالب؛ لكل سطر ورسم شارة مصدر مستقلة. */
+export interface NotebookGroup {
+  heading: string;
+  lines: NotebookLine[];
+  figures?: { figureId: string; caption: string; source: ContentSource }[];
+}
+
+/**
+ * دفتر الطالب — قسم أخير متكامل يضم كل ما يحتاجه الطالب لنقله إلى دفتره
+ * المدرسي، بلا حاجة إلى الرجوع إلى الشرح الكامل.
+ */
+export interface LessonNotebook {
+  title: string;
+  intro?: string;
+  groups: NotebookGroup[];
+}
 
 /** قسم داخل الدرس: عنوان + كتل مرتّبة. */
 export interface LessonSection {
   id: string;
   title: string;
   blocks: LessonBlock[];
+  /** مصدر القسم غالبًا — للعرض والتمييز. */
+  source?: ContentSource;
 }
 
 /**
@@ -88,6 +141,8 @@ export interface LessonContent {
   sections: LessonSection[];
   /** اختبار الدرس المحلي — يعمل ويُصحَّح داخل المتصفح وحده. */
   quiz?: Quiz;
+  /** دفتر الطالب — قسم أخير قابل للنقل والطباعة. */
+  notebook?: LessonNotebook;
 }
 
 /* ───────────── الاختبارات المحلية (في المتصفح) ───────────── */
@@ -147,6 +202,10 @@ export interface Unit {
   title: string;
   /** وصف تنظيمي اختياري. */
   summary?: string;
+  /** لون التمييز البصري للبطاقات (هيكس) — اختياري. */
+  accent?: string;
+  /** تدرج فاتح مكمّل للون التمييز — اختياري. */
+  tint?: string;
   /** الدروس بترتيبها داخل الوحدة. */
   lessons: Lesson[];
 }

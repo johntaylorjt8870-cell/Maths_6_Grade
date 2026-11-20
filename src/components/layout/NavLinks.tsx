@@ -16,7 +16,7 @@ export function NavLinks() {
   // usePathname يعيد المسار مع basePath على GitHub Pages؛ نزيله قبل المقارنة.
   const pathname = stripBasePath(usePathname() ?? "/");
   return (
-    <nav aria-label="التنقل الرئيسي" className="flex items-center gap-1">
+    <nav aria-label="التنقل الرئيسي" className="flex min-w-0 flex-wrap items-center gap-1">
       {LINKS.map((l) => {
         const active = l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
         return (
@@ -24,7 +24,7 @@ export function NavLinks() {
             key={l.href}
             href={l.href}
             aria-current={active ? "page" : undefined}
-            className={`rounded-lg px-3 py-1.5 text-[0.95rem] font-medium transition-colors ${
+            className={`whitespace-nowrap rounded-lg px-2 py-1.5 text-sm font-medium transition-colors sm:px-3 sm:text-[0.95rem] ${
               active
                 ? "bg-brand text-white"
                 : "text-ink-soft hover:bg-brand-soft hover:text-brand"

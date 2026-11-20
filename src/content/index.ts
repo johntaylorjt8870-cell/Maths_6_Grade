@@ -34,6 +34,24 @@ export function findLesson(id: string): { unit: Unit; lesson: Lesson } | undefin
   return getAllLessons().find((entry) => entry.lesson.id === id);
 }
 
+/** وحدة واحدة بمعرّفها، أو undefined إن لم توجد. */
+export function findUnit(id: string): Unit | undefined {
+  return getCurriculum().find((unit) => unit.id === id);
+}
+
+/** معرّفات الوحدات — تُستخدم في generateStaticParams لصفحات الوحدات. */
+export function getUnitIds(): string[] {
+  return getCurriculum().map((unit) => unit.id);
+}
+
+/** الوحدة السابقة والتالية في ترتيب الفهرس — للتنقل بين الوحدات. */
+export function getUnitNeighbours(id: string) {
+  const units = getCurriculum();
+  const index = units.findIndex((unit) => unit.id === id);
+  if (index === -1) return { prev: undefined, next: undefined };
+  return { prev: units[index - 1], next: units[index + 1] };
+}
+
 /** كل معرّفات الدروس — تُستخدم في generateStaticParams للتصدير الثابت. */
 export function getLessonIds(): string[] {
   return getAllLessons().map((entry) => entry.lesson.id);

@@ -36,24 +36,38 @@ npm run preview      # http://localhost:4000/Maths_6_Grade/
 src/
   app/                      صفحات Next.js (كلها ثابتة)
     page.tsx                الصفحة الرئيسية
-    curriculum/page.tsx     فهرس المنهاج
+    curriculum/page.tsx     فهرس المنهاج — بطاقات الوحدات الست
+    curriculum/[unitId]/page.tsx  صفحة الوحدة — بطاقات دروسها (generateStaticParams)
     lessons/[id]/page.tsx   صفحة درس (تُولَّد لكل درس في الفهرس)
-    exams/page.tsx          الاختبارات
-    lab/page.tsx            المختبر التفاعلي
+    exams/page.tsx          الاختبارات (تظهر اختبارات الدروس المعتمدة فقط)
+    lab/page.tsx            المختبر التفاعلي (يظهر مختبرات الدروس المعتمدة)
     math-engine/page.tsx    معاينة محرك KaTeX
     not-found.tsx           صفحة 404 بالعربية (تُصدَّر إلى out/404.html)
   components/
     layout/                 Header, Footer, NavLinks, PlatformLogo
     identity/Engineer.tsx   هوية المهندس سومر شاهين (SR + واتساب)
     math/Math.tsx           KaTeX: M, MathBlock, Q, SvgMath, renderTex
-    math/RichText.tsx       نص عربي يضم تعابير $...$
-    lesson/LessonContent.tsx عارض كتل الدرس
+    math/RichText.tsx       نص عربي يضم تعابير $...$ و **نصًا عريضًا**
+    charts/LineChart.tsx    مخطط خطي SVG دقيق (يُعيد رسم رسوم الكتاب)
+    lesson/LessonContent.tsx عارض كتل الدرس + دفتر الطالب
     lesson/LocalQuiz.tsx    اختبار محلي بالتصحيح الفوري (client)
+    lesson/SourceTag.tsx    شارة مصدر الكتلة: «من الكتاب» / «إثراء»
+    lesson/PrintNotebookButton.tsx  طباعة دفتر الطالب فقط (window.print)
+    lesson/interactive/     سجلّات الأنشطة/التمارين/الرسوم + مكوّنات المتصفح
+      registry.tsx          يربط activityId/exerciseId/figureId بالمكوّنات
+      datasets.ts           بيانات الكتاب المستعملة في الأنشطة (ص 3-5)
+      CoordinateGridPlot.tsx   «انطلاقة (1)»: وضع النقاط على شبكة الإحداثيات
+      FillTableCheck.tsx       «انطلاقة (2)»: قراءة تمثيل الطلاب وملء الجدول
+      PlotPointsExercise.tsx   وضع النقاط ثم وصلها (مثال الكتاب و«تحقق» و«تدرّب»)
+      GraphStudio.tsx          المختبر التفاعلي: بيانات الكتاب الثلاث + قراءة النقاط
+      CheckAppleExercise.tsx   «تحقق من فهمك» (ب، ج)
+      RainReadingExercise.tsx  «تدرّب (2)» أ–د: هطول الأمطار في دمشق
     ui/StatusBadge.tsx      شارة حالة الدرس
   content/                  ← بيانات المنهاج (المصدر الوحيد)
-    types.ts                أنواع الوحدات والدروس والكتل
-    curriculum.ts           الفهرس الفعلي (فارغ الآن)
+    types.ts                أنواع الوحدات والدروس والكتل والدفتر
+    curriculum.ts           الفهرس الفعلي: 6 وحدات، 45 درسًا (الدرس 1 منشور)
     index.ts                دوال القراءة و generateStaticParams
+    lessons/lesson-1-1.ts   محتوى الدرس الأول (منقول عن ص 3-5 موسومًا بالمصدر)
   lib/
     site.ts                 هوية المنصة والمهندس وحالات الدروس
     base-path.ts            المسار الفرعي لـ GitHub Pages
@@ -68,7 +82,7 @@ scripts/serve-static.mjs    خادم معاينة محاكٍ لـ GitHub Pages
 
 ### 1) فهرس الوحدات والدروس
 
-كل شيء في `src/content/curriculum.ts`. الملف فارغ الآن عن قصد: **لا دروس تجريبية**.
+كل شيء في `src/content/curriculum.ts` (ومعه محتوى الدروس المنشورة في `src/content/lessons/`). **لا دروس تجريبية**؛ الفهرس الحالي مستخرج من صورة «الفهرس» في الكتاب (ص 2): 6 وحدات و45 درسًا. الدرس الأول (التمثيل البياني بالخطوط) منشور بمحتواه الكامل؛ وبقية الدروس `indexed` (عناوين بلا محتوى) إلى أن تُرسل صور صفحاتها.
 
 ```ts
 export const CURRICULUM: Curriculum = [
@@ -117,13 +131,28 @@ content: {
           { text: "نكتب المعطيات." },
           { tex: "x = 5" },
         ]},
-        { type: "figure", figureId: "fig-1", caption: "شكل توضيحي" },
-        { type: "activity", activityId: "act-1", prompt: "جرّب القيم" },
+        { type: "table", headers: ["اليوم", "الأحد", "الاثنين"], rows: [["درجة الحرارة", "15", "16"]] },
+        { type: "figure", figureId: "fig-1", caption: "شكل توضيحي (يُسجَّل في FIGURE_REGISTRY)" },
+        { type: "activity", activityId: "act-1", prompt: "جرّب القيم (يُسجَّل في ACTIVITY_REGISTRY)" },
         { type: "exercise", exerciseId: "ex-1" },
-        { type: "summary", points: ["خلاصة أولى", "خلاصة ثانية"] },
+        { type: "summary", points: [
+          { text: "خلاصة من نص الدرس", source: "book" },
+          { text: "إضافة تعليمية من المنصة", source: "extra" },
+        ] },
       ],
     },
   ],
+  notebook: {
+    title: "دفتر الطالب — عنوان الدرس",
+    intro: "…",
+    groups: [
+      {
+        heading: "1) …",
+        lines: [{ text: "…", source: "book" }, { tex: "a^2+b^2=c^2", source: "extra" }],
+        figures: [{ figureId: "fig-1", caption: "عنوان الرسم القابل للطباعة", source: "book" }],
+      },
+    ],
+  },
   quiz: {
     id: "quiz-1",
     questions: [
@@ -143,6 +172,13 @@ content: {
 ```
 
 الاختبار يُصحَّح في المتصفح فقط، ويظهر في صفحة `/exams/` تلقائيًا لكل درس `published` له `quiz`.
+
+ملاحظات تنفيذية:
+
+- شارة `source: "book" | "extra"` تميّز «من الكتاب» عن «إثراء». في الملخص والدفتر لكل بند أو رسم مصدر صريح؛ لا توضع شارة «من الكتاب» على محتوى مختلط. اختبار الدرس من إعداد المنصة ويُوسم «إثراء».
+- تُسجَّل معرّفات الرسوم والأنشطة والتمارين في `src/components/lesson/interactive/registry.tsx`. يَستخدم الدفتر رسوم SVG نفسها؛ يُطبع النص والرسوم معًا عند الضغط على «طباعة الدفتر»، دون باقي الدرس.
+- مواضع نقاط رسم الطلاب وأمطار دمشق على صور الكتاب موثّقة في [جدول التدقيق](docs/lesson-1-1-graph-verification.md).
+- النصوص تقبل `**عريض**` إضافةً إلى تعابير `$...$`.
 
 ---
 
