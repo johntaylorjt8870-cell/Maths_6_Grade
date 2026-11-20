@@ -29,7 +29,7 @@ export default function ExamsPage() {
           {quizLessons.map(({ unit, lesson }) => (
             <li key={lesson.id} className="card flex flex-wrap items-center justify-between gap-4 p-5">
               <div>
-                <p className="text-[0.9rem] text-ink-soft">الوحدة {unit.number}: {unit.title}</p>
+                <p className="text-[0.9rem] text-ink-soft">{unit.title}</p>
                 <p className="text-[1.1rem] font-semibold">
                   الدرس {lesson.number}: {lesson.title}
                 </p>

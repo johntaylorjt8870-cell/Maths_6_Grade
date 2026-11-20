@@ -171,3 +171,33 @@ textarea {
     animation: none !important;
   }
 }
+
+/* ───────────── دفتر الطالب: الطباعة ─────────────
+   عند الطباعة يُخفى كل شيء ما عدا قسم «دفتر الطالب». */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .notebook-print,
+  .notebook-print * {
+    visibility: visible;
+  }
+  .notebook-print {
+    position: absolute;
+    inset: 0 0 auto 0;
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .no-print,
+  .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  body {
+    background: #fff;
+  }
+}

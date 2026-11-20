@@ -57,9 +57,11 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
           فهرس المنهاج
         </Link>
         <span className="mx-2">›</span>
-        <span>
-          الوحدة {unit.number}: {unit.title}
-        </span>
+        <Link href={`/curriculum/${unit.id}`} className="hover:text-brand hover:underline">
+          {unit.title}
+        </Link>
+        <span className="mx-2">›</span>
+        <span>الدرس {lesson.number}</span>
       </nav>
 
       <h1 className="mt-3 text-[2.2rem] font-bold">
