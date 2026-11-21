@@ -12,6 +12,9 @@ import type { StageIcon } from "@/content/lesson-stages";
  * بنية المحتوى نفسه. كل اللوحات تبقى مُركّبة واللوحات غير النشطة تُخفى فقط،
  * فتُحفظ حالة التفاعلات (الرسوم، الاختبارات، الجداول) عند التنقل.
  *
+ * «الإنجاز» فعل صريح: لا تُعلَّم المرحلة مكتملة لمجرد فتحها، بل يضغط الطالب
+ * زر «إتمام المرحلة» — تُحفظ المكتملات في localStorage (v2).
+ *
  * على الشاشات الكبيرة: قائمة مراحل جانبية ثابتة بجانب المحتوى.
  * على الهاتف: شريط مراحل أفقي قابل للتمرير بدل القائمة الجانبية.
  * الرابط المباشر يعمل عبر بصمة المرحلة في العنوان مثل `/lessons/lesson-1-1/#quiz`.
@@ -104,11 +107,12 @@ export function LessonSteps({
   finishHref: string;
   finishLabel?: string;
 }) {
-  const firstId = steps[0]?.id ?? "";
   const [current, setCurrent] = useState(0);
-  const [visited, setVisited] = useState<ReadonlySet<string>>(() => new Set<string>(firstId ? [firstId] : []));
+  const [completed, setCompleted] = useState<ReadonlySet<string>>(() => new Set<string>());
+  // يمنع تأثير الحفظ من الكتابة قبل اكتمال استرجاع التخزين المحلي عند التثبيت.
+  const [hydrated, setHydrated] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const stripRef = useRef<HTMLDivElement>(null);
+  const stripRef = useRef<HTMLUListElement>(null);
   const stepsRef = useRef(steps);
   useEffect(() => {
     stepsRef.current = steps;
@@ -127,11 +131,11 @@ export function LessonSteps({
   }, []);
 
   const persist = useCallback(
-    (index: number, visitedSet: ReadonlySet<string>) => {
+    (index: number, completedSet: ReadonlySet<string>) => {
       try {
         window.localStorage.setItem(
           storageKey(lessonId),
-          JSON.stringify({ v: 1, current: index, visited: [...visitedSet] }),
+          JSON.stringify({ v: 2, current: index, completed: [...completedSet] }),
         );
       } catch {
         /* التخزين المحلي قد يكون محظورًا — لا يؤثر في التنقل */
@@ -140,6 +144,15 @@ export function LessonSteps({
     [lessonId],
   );
 
+  const toggleComplete = useCallback((id: string) => {
+    setCompleted((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
   const goTo = useCallback(
     (index: number, options?: { push?: boolean; scroll?: boolean }) => {
       const list = stepsRef.current;
@@ -147,7 +160,6 @@ export function LessonSteps({
       const clamped = Math.max(0, Math.min(list.length - 1, index));
       const target = list[clamped];
       setCurrent(clamped);
-      setVisited((prev) => new Set(prev).add(target.id));
       try {
         if (options?.push === false) window.history.replaceState(null, "", `#${target.id}`);
         else window.history.pushState(null, "", `#${target.id}`);
@@ -159,39 +171,46 @@ export function LessonSteps({
     [scrollToTop],
   );
 
-  // عند التثبيت: استرجاع المرحلة من بصمة الرابط أو من التخزين المحلي،
-  // والاستماع لزرّي «السابق/التالي» في المتصفح.
+  // عند التثبيت: استرجاع المرحلة والإتمامات من بصمة الرابط ثم التخزين المحلي.
+  // هذا التأثير يُعلن قبل تأثير الحفظ، ويفعّل `hydrated` في آخر خطوة —
+  // فتبقى الكتابة ممنوعة حتى تكتمل التهيئة.
   useEffect(() => {
     let initial: number | null = indexFromHash();
-    let storedVisited: string[] = [];
+    let storedCompleted: string[] = [];
+    let storedCurrent: number | null = null;
     if (initial === null) {
       try {
         const raw = window.localStorage.getItem(storageKey(lessonId));
         if (raw) {
-          const data = JSON.parse(raw) as { current?: number; visited?: string[] };
+          const data = JSON.parse(raw) as { current?: number; completed?: unknown; visited?: unknown };
           if (typeof data.current === "number" && Number.isInteger(data.current) && data.current >= 0 && data.current < stepsRef.current.length) {
-            initial = data.current;
+            storedCurrent = data.current;
           }
-          if (Array.isArray(data.visited)) storedVisited = data.visited.filter((v): v is string => typeof v === "string");
+          // v2 يخزّن «completed» صراحةً. التخزين القديم (v1: «visited») لا يُعتبر
+          // إتمامًا — تُستعاد المرحلة المحفوظة ويبدأ عدّ الإتمامات من صفر.
+          if (Array.isArray(data.completed)) {
+            storedCompleted = data.completed.filter((v): v is string => typeof v === "string");
+          }
         }
       } catch {
         /* تجاهل التخزين التالف */
       }
+      initial = storedCurrent ?? 0;
     }
     const fallback = initial ?? 0;
     const fallbackId = stepsRef.current[fallback]?.id;
-    setVisited(new Set<string>([...storedVisited, ...(fallbackId ? [fallbackId] : [])]));
+    setCompleted(new Set<string>(storedCompleted));
     if (fallback !== 0) setCurrent(fallback);
     try {
       window.history.replaceState(null, "", `#${fallbackId ?? ""}`);
     } catch {
       /* تجاهل */
     }
+    setHydrated(true);
     const onPopState = () => {
       const index = indexFromHash();
       if (index === null) return;
       setCurrent(index);
-      setVisited((prev) => new Set(prev).add(stepsRef.current[index].id));
       scrollToTop();
     };
     window.addEventListener("popstate", onPopState);
@@ -204,13 +223,17 @@ export function LessonSteps({
   const currentStep = steps[safeCurrent];
   const isFirst = safeCurrent === 0;
   const isLast = safeCurrent === total - 1;
-  const doneCount = useMemo(() => steps.filter((step) => visited.has(step.id)).length, [steps, visited]);
+  const doneCount = useMemo(() => steps.filter((step) => completed.has(step.id)).length, [steps, completed]);
+  const allDone = total > 0 && doneCount === total;
   const progressPct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+  const isCurrentComplete = currentStep ? completed.has(currentStep.id) : false;
 
-  // حفظ التقدّم محليًا كلما تغيّرت المرحلة أو مجموعة المراحل المنجزة.
+  // حفظ التقدّم محليًا بعد اكتمال التهيئة فقط — وإلا نكتب القيم الابتدائية
+  // فوق التقدّم المحفوظ قبل انتهاء الاسترجاع.
   useEffect(() => {
-    persist(safeCurrent, visited);
-  }, [safeCurrent, visited, persist]);
+    if (!hydrated) return;
+    persist(safeCurrent, completed);
+  }, [hydrated, safeCurrent, completed, persist]);
 
   // إبقاء المرحلة الحالية ظاهرة داخل شريط الهاتف الأفقي.
   useEffect(() => {
@@ -252,9 +275,11 @@ export function LessonSteps({
     );
 
   const stageState = (index: number, id: string): "current" | "done" | "todo" =>
-    index === safeCurrent ? "current" : visited.has(id) ? "done" : "todo";
+    index === safeCurrent ? "current" : completed.has(id) ? "done" : "todo";
 
-  const progressText = `أنجزت ${doneCount} من ${total} مراحل`;
+  const progressText = allDone
+    ? "رائع — أتممت جميع مراحل الدرس!"
+    : `أتممت ${doneCount} من ${total} مراحل`;
 
   const progressBar = (
     <div aria-hidden="true" className="h-1.5 w-full overflow-hidden rounded-full bg-ink/10">
@@ -272,35 +297,35 @@ export function LessonSteps({
             المرحلة {safeCurrent + 1} من {total}
           </p>
         </div>
-        <div ref={stripRef} className="mt-2 flex snap-x gap-2 overflow-x-auto pb-2 pt-1 [scrollbar-width:thin]" role="list" aria-label="مراحل الدرس">
+        <ul ref={stripRef} className="mt-2 flex snap-x gap-2 overflow-x-auto pb-2 pt-1 [scrollbar-width:thin]" aria-label="مراحل الدرس">
           {steps.map((step, index) => {
             const state = stageState(index, step.id);
             const isCurrent = state === "current";
             return (
-              <button
-                key={step.id}
-                type="button"
-                role="listitem"
-                onClick={() => goTo(index)}
-                aria-current={isCurrent ? "step" : undefined}
-                className={[
-                  "flex w-[7.5rem] shrink-0 snap-start flex-col items-center gap-1.5 rounded-xl border px-2 py-2 text-center transition-colors",
-                  isCurrent
-                    ? "border-brand bg-brand-soft/60 text-brand"
-                    : state === "done"
-                      ? "border-emerald-600/25 bg-emerald-50/60 text-emerald-800"
-                      : "border-ink/10 bg-white text-ink-soft",
-                ].join(" ")}
-              >
-                <span className="flex items-center gap-1.5">
-                  {state === "done" ? <CheckIcon className="h-4 w-4 text-emerald-700" /> : <StageIcon icon={step.icon} className="h-4 w-4" />}
-                  <span className="text-[0.72rem] font-bold tabular-nums">{index + 1}</span>
-                </span>
-                <span className="text-[0.78rem] font-bold leading-[1.4]">{step.name}</span>
-              </button>
+              <li key={step.id} className="w-[7.5rem] shrink-0 snap-start">
+                <button
+                  type="button"
+                  onClick={() => goTo(index)}
+                  aria-current={isCurrent ? "step" : undefined}
+                  className={[
+                    "flex h-full w-full flex-col items-center gap-1.5 rounded-xl border px-2 py-2 text-center transition-colors",
+                    isCurrent
+                      ? "border-brand bg-brand-soft/60 text-brand"
+                      : state === "done"
+                        ? "border-emerald-600/25 bg-emerald-50/60 text-emerald-800"
+                        : "border-ink/10 bg-white text-ink-soft",
+                  ].join(" ")}
+                >
+                  <span className="flex items-center gap-1.5">
+                    {state === "done" ? <CheckIcon className="h-4 w-4 text-emerald-700" /> : <StageIcon icon={step.icon} className="h-4 w-4" />}
+                    <span className="text-[0.72rem] font-bold tabular-nums">{index + 1}</span>
+                  </span>
+                  <span className="text-[0.78rem] font-bold leading-[1.4]">{step.name}</span>
+                </button>
+              </li>
             );
           })}
-        </div>
+        </ul>
         <div className="mt-1.5 flex items-center gap-3">
           {progressBar}
           <span className="shrink-0 text-[0.75rem] font-semibold text-ink-soft tabular-nums">{progressText}</span>
@@ -364,8 +389,8 @@ export function LessonSteps({
             </div>
           ))}
 
-          {/* ── أزرار السابق / التالي (أو «إنهاء الدرس» في المرحلة الأخيرة) ── */}
-          <div className="lesson-steps-chrome no-print mt-5 flex items-center justify-between gap-3 border-t border-ink/10 pt-4">
+          {/* ── أزرار السابق / إتمام المرحلة / التالي (أو «إنهاء الدرس» في المرحلة الأخيرة) ── */}
+          <div className="lesson-steps-chrome no-print mt-5 flex items-center justify-between gap-2 border-t border-ink/10 pt-4 sm:gap-3">
             <button
               type="button"
               className="btn btn-ghost"
@@ -379,9 +404,26 @@ export function LessonSteps({
               السابق
             </button>
 
-            <span className="hidden text-[0.85rem] font-semibold text-ink-soft tabular-nums sm:inline">
-              {currentStep ? `${currentStep.name} — ${safeCurrent + 1} من ${total}` : ""}
-            </span>
+            {/* «الإنجاز» فعل صريح يضغطه الطالب — فتح المرحلة وحدها لا يُعدّ إتمامًا */}
+            <button
+              type="button"
+              onClick={() => currentStep && toggleComplete(currentStep.id)}
+              aria-pressed={isCurrentComplete}
+              title={isCurrentComplete ? "إلغاء علامة الإتمام عن هذه المرحلة" : "وضع علامة إتمام على هذه المرحلة"}
+              className={[
+                "btn",
+                isCurrentComplete ? "border border-emerald-600/40 bg-emerald-50 text-emerald-800 hover:bg-emerald-100" : "btn-ghost",
+              ].join(" ")}
+            >
+              {isCurrentComplete ? (
+                <CheckIcon className="h-5 w-5 text-emerald-700" />
+              ) : (
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+                  <circle cx="12" cy="12" r="8.2" strokeDasharray="3.2 2.6" strokeLinecap="round" />
+                </svg>
+              )}
+              <span>{isCurrentComplete ? "أُتمّت" : "إتمام المرحلة"}</span>
+            </button>
 
             {isLast ? (
               <Link href={finishHref} className="btn btn-primary">
