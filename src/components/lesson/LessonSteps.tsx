@@ -171,36 +171,35 @@ export function LessonSteps({
     [scrollToTop],
   );
 
-  // عند التثبيت: استرجاع المرحلة والإتمامات من بصمة الرابط ثم التخزين المحلي.
+  // عند التثبيت: نقرأ التخزين المحلي **دائمًا** — حتى مع وجود بصمة صالحة —
+  // وإلا ضاعت الإتمامات المحفوظة بفتح رابط مباشر.
   // هذا التأثير يُعلن قبل تأثير الحفظ، ويفعّل `hydrated` في آخر خطوة —
   // فتبقى الكتابة ممنوعة حتى تكتمل التهيئة.
   useEffect(() => {
-    let initial: number | null = indexFromHash();
+    const hashIndex = indexFromHash();
     let storedCompleted: string[] = [];
     let storedCurrent: number | null = null;
-    if (initial === null) {
-      try {
-        const raw = window.localStorage.getItem(storageKey(lessonId));
-        if (raw) {
-          const data = JSON.parse(raw) as { current?: number; completed?: unknown; visited?: unknown };
-          if (typeof data.current === "number" && Number.isInteger(data.current) && data.current >= 0 && data.current < stepsRef.current.length) {
-            storedCurrent = data.current;
-          }
-          // v2 يخزّن «completed» صراحةً. التخزين القديم (v1: «visited») لا يُعتبر
-          // إتمامًا — تُستعاد المرحلة المحفوظة ويبدأ عدّ الإتمامات من صفر.
-          if (Array.isArray(data.completed)) {
-            storedCompleted = data.completed.filter((v): v is string => typeof v === "string");
-          }
+    try {
+      const raw = window.localStorage.getItem(storageKey(lessonId));
+      if (raw) {
+        const data = JSON.parse(raw) as { current?: number; completed?: unknown; visited?: unknown };
+        if (typeof data.current === "number" && Number.isInteger(data.current) && data.current >= 0 && data.current < stepsRef.current.length) {
+          storedCurrent = data.current;
         }
-      } catch {
-        /* تجاهل التخزين التالف */
+        // v2 يخزّن «completed» صراحةً. التخزين القديم (v1: «visited») لا يُعتبر
+        // إتمامًا — تُستعاد المرحلة المحفوظة ويبدأ عدّ الإتمامات من صفر.
+        if (Array.isArray(data.completed)) {
+          storedCompleted = data.completed.filter((v): v is string => typeof v === "string");
+        }
       }
-      initial = storedCurrent ?? 0;
+    } catch {
+      /* تجاهل التخزين التالف */
     }
-    const fallback = initial ?? 0;
-    const fallbackId = stepsRef.current[fallback]?.id;
+    // أولوية المرحلة الحالية: بصمة صالحة > المرحلة المحفوظة > المرحلة الأولى.
+    const initial = hashIndex ?? storedCurrent ?? 0;
+    const fallbackId = stepsRef.current[initial]?.id;
     setCompleted(new Set<string>(storedCompleted));
-    if (fallback !== 0) setCurrent(fallback);
+    if (initial !== 0) setCurrent(initial);
     try {
       window.history.replaceState(null, "", `#${fallbackId ?? ""}`);
     } catch {
