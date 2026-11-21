@@ -1,44 +1,130 @@
-import { Fragment } from "react";
 import { MathBlock, M } from "@/components/math/Math";
 import { RichText } from "@/components/math/RichText";
 import { LocalQuiz } from "@/components/lesson/LocalQuiz";
 import { SourceTag } from "@/components/lesson/SourceTag";
 import { PrintNotebookButton } from "@/components/lesson/PrintNotebookButton";
+import { LessonSteps, type LessonStep } from "@/components/lesson/LessonSteps";
+import { LESSON_STAGES } from "@/content/lesson-stages";
 import { ACTIVITY_REGISTRY, EXERCISE_REGISTRY, FIGURE_REGISTRY } from "@/components/lesson/interactive/registry";
-import type { ContentSource, FigureBlock, Lesson, LessonBlock, LessonContent as Content, LessonNotebook, Quiz } from "@/content/types";
+import type { ContentSource, FigureBlock, Lesson, LessonBlock, LessonContent as Content, LessonNotebook, LessonSection, Quiz } from "@/content/types";
 
 /**
- * عارض محتوى الدرس — يستقبل كتلًا مُعرَّفة في ملفات المحتوى الثابتة.
+ * عارض محتوى الدرس — يبني «خطوات» المراحل من بيانات المحتوى الثابتة
+ * ويمررها إلى نظام المراحل العام `LessonSteps`.
+ *
  * الكتل التفاعلية تُربط بمكوناتها عبر السجلّات، وتعمل في المتصفح فقط.
+ * المحتوى العلمي لا يُعاد تشكيله هنا: القسم يظهر كما هو داخل بطاقته،
+ * الاختبار مرحلة مستقلة قبل الملخص، ودفتر الطالب يبقى المرحلة الأخيرة.
  */
-export function LessonContent({ lesson, content }: { lesson: Lesson; content: Content }) {
-  // يغلق الاختبار مرحلة التطبيق، ثم يراجع الطالب الملخص وينقل الدفتر.
-  const summaryIndex = content.sections.findIndex((section) => section.id === "summary");
-  const quiz = content.quiz && <LessonQuiz quiz={content.quiz} lessonTitle={lesson.title} />;
+export function LessonContent({
+  lesson,
+  content,
+  finishHref = "/curriculum",
+}: {
+  lesson: Lesson;
+  content: Content;
+  /** وجهة «إنهاء الدرس» من المرحلة الأخيرة (تُمرَّر من صفحة الدرس). */
+  finishHref?: string;
+}) {
+  const steps = buildLessonSteps(lesson, content);
+  return <LessonSteps lessonId={lesson.id} steps={steps} finishHref={finishHref} />;
+}
 
+/**
+ * تحويل محتوى الدرس إلى مراحل مرتّبة حسب LESSON_STAGES المعتمد:
+ * التهيئة ← اكتشاف المفهوم ← الشرح المفصل ← النشاط/المختبر ← تحقق من فهمك
+ * ← التطبيق ← اختبار الدرس ← الملخص ← دفتر الطالب.
+ * أي أقسام غير معروفة تُضاف بعد المراحل المعروفة مباشرة (لا تُحذف).
+ * الاختبار مرحلة مستقلة برقمه في التسلسل (7)، ولا يُعرض قبل التطبيق.
+ */
+function buildLessonSteps(lesson: Lesson, content: Content): LessonStep[] {
+  const sectionById = new Map(content.sections.map((section) => [section.id, section] as const));
+  const consumed = new Set<string>();
+  const steps: LessonStep[] = [];
+
+  // عنوان القسم مثل «التهيئة — انطلاقة الدرس»: بعد الشرطتين وصف قصير للقائمة الجانبية.
+  const hintFromTitle = (title: string): string | undefined => {
+    const parts = title.split("—");
+    return parts.length > 1 ? parts.slice(1).join("—").trim() : undefined;
+  };
+
+  const pushSectionStep = (stageId: string, name: string, icon: LessonStep["icon"], section: LessonSection, fallbackHint?: string) => {
+    consumed.add(section.id);
+    steps.push({
+      id: stageId,
+      name,
+      hint: hintFromTitle(section.title) ?? fallbackHint,
+      icon,
+      content: <SectionCard section={section} />,
+    });
+  };
+
+  const pushQuiz = () => {
+    if (!content.quiz) return;
+    const stage = LESSON_STAGES.find((s) => s.id === "quiz");
+    steps.push({
+      id: "quiz",
+      name: stage?.name ?? "اختبار الدرس",
+      hint: "اختبار من إعداد المنصة",
+      icon: stage?.icon ?? "clipboard",
+      content: <LessonQuiz quiz={content.quiz} lessonTitle={lesson.title} />,
+    });
+  };
+
+  for (const stage of LESSON_STAGES) {
+    if (stage.id === "quiz") {
+      // اختبار الدرس مرحلة مستقلة، موضعها المعتمد قبل الملخص.
+      pushQuiz();
+      continue;
+    }
+    if (stage.id === "notebook") continue; // يُضاف أخيرًا
+    const section = sectionById.get(stage.id);
+    if (!section) continue;
+    pushSectionStep(stage.id, stage.name, stage.icon, section, stage.hint);
+  }
+
+  // أقسام غير معروفة (دروس قادمة ببنية مختلفة) — تُعرض بعد المراحل المعروفة ولا تُستبعد.
+  for (const section of content.sections) {
+    if (consumed.has(section.id)) continue;
+    steps.push({
+      id: section.id,
+      name: section.title,
+      icon: "book",
+      content: <SectionCard section={section} />,
+    });
+  }
+
+  // دفتر الطالب يبقى المرحلة الأخيرة دائمًا.
+  if (content.notebook) {
+    const stage = LESSON_STAGES.find((s) => s.id === "notebook");
+    steps.push({
+      id: "notebook",
+      name: stage?.name ?? "دفتر الطالب",
+      hint: "انقله إلى دفترك أو اطبعه",
+      icon: stage?.icon ?? "notebook",
+      content: <Notebook notebook={content.notebook} lessonTitle={lesson.title} />,
+    });
+  }
+
+  return steps;
+}
+
+/** بطاقة قسم واحد — كما كانت تُعرض في الصفحة الواحدة، دون أي تغيير في الكتل. */
+function SectionCard({ section }: { section: LessonSection }) {
   return (
-    <article className="mt-8 space-y-6">
-      {content.sections.map((section, index) => (
-        <Fragment key={section.id}>
-          {index === summaryIndex && quiz}
-          <section id={section.id} className="card scroll-mt-56 p-3 sm:p-6 lg:scroll-mt-24" aria-labelledby={`sec-${section.id}`}>
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 pb-3">
-              <h2 id={`sec-${section.id}`} className="text-xl font-bold">
-                {section.title}
-              </h2>
-              {section.source && <SourceTag source={section.source} />}
-            </div>
-            <div className="mt-4 space-y-4">
-              {section.blocks.map((block, i) => (
-                <Block key={i} block={block} />
-              ))}
-            </div>
-          </section>
-        </Fragment>
-      ))}
-      {summaryIndex === -1 && quiz}
-      {content.notebook && <Notebook notebook={content.notebook} lessonTitle={lesson.title} />}
-    </article>
+    <section id={section.id} className="card scroll-mt-24 p-3 sm:p-6" aria-labelledby={`sec-${section.id}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 pb-3">
+        <h2 id={`sec-${section.id}`} className="text-xl font-bold">
+          {section.title}
+        </h2>
+        {section.source && <SourceTag source={section.source} />}
+      </div>
+      <div className="mt-4 space-y-4">
+        {section.blocks.map((block, i) => (
+          <Block key={i} block={block} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -251,7 +337,7 @@ function Block({ block }: { block: LessonBlock }) {
 
 function LessonQuiz({ quiz, lessonTitle }: { quiz: Quiz; lessonTitle: string }) {
   return (
-    <section id="quiz" className="card scroll-mt-56 p-3 sm:p-6 lg:scroll-mt-24">
+    <section id="quiz" className="card scroll-mt-24 p-3 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/10 pb-3">
         <h2 className="text-xl font-bold">{quiz.title ?? `اختبار الدرس: ${lessonTitle}`}</h2>
         <SourceTag source="extra" />
@@ -265,7 +351,7 @@ function LessonQuiz({ quiz, lessonTitle }: { quiz: Quiz; lessonTitle: string }) 
 /** دفتر الطالب — كل ما ينقله الطالب إلى دفتره، مع زر طباعة يقصر النشر على هذا القسم. */
 function Notebook({ notebook, lessonTitle }: { notebook: LessonNotebook; lessonTitle: string }) {
   return (
-    <section id="notebook" className="card notebook-print scroll-mt-56 p-3 sm:p-6 lg:scroll-mt-24" aria-labelledby="notebook-title">
+    <section id="notebook" className="card notebook-print scroll-mt-24 p-3 sm:p-6" aria-labelledby="notebook-title">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-brand/25 pb-4">
         <div>
           <p className="text-[0.82rem] font-bold uppercase tracking-wide text-brand">دفتر الطالب</p>

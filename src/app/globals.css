@@ -193,12 +193,14 @@ textarea {
   }
 }
 
-/* دفتر الطالب في تدفّق الصفحات الطبيعي: لا مساحات فارغة لباقي الدرس. */
+/* دفتر الطالب في تدفّق الصفحات الطبيعي: لا مساحات فارغة لباقي الدرس.
+   نظام المراحل يُبقي كل اللوحات في DOM ويخفي غير النشطة — لذا نكشف
+   لوحة الدفتر فقط عند الطباعة مهما كانت المرحلة المعروضة. */
 @media print {
   body:has(.notebook-print) > :not(:has(.notebook-print)),
   main:has(.notebook-print) > :not(:has(.notebook-print)),
-  article:has(> .notebook-print) > :not(.notebook-print),
-  .no-print {
+  .no-print,
+  .lesson-stage:not(:has(.notebook-print)) {
     display: none !important;
   }
 
@@ -209,11 +211,20 @@ textarea {
   }
 
   main:has(.notebook-print),
-  article:has(> .notebook-print),
+  .lesson-steps-root,
+  .lesson-steps-layout,
+  .lesson-steps-panels,
+  .lesson-stage:has(.notebook-print),
   .notebook-print {
+    display: block !important;
     max-width: none;
     margin: 0;
     padding: 0;
+  }
+
+  .lesson-steps-layout {
+    grid-template-columns: none !important;
+    gap: 0 !important;
   }
 
   .notebook-print {

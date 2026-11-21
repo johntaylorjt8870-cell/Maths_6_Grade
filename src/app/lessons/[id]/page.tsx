@@ -73,7 +73,7 @@ export default async function LessonPage({ params }: { params: Promise<{ id: str
       </div>
 
       {hasContent && lesson.content ? (
-        <LessonContent lesson={lesson} content={lesson.content} />
+        <LessonContent lesson={lesson} content={lesson.content} finishHref={`/curriculum/${unit.id}`} />
       ) : (
         <section className="card mt-8 p-10 text-center">
           <p className="text-[1.25rem] font-bold">محتوى هذا الدرس لم يُنشر بعد</p>
