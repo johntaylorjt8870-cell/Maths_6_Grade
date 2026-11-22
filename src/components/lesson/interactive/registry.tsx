@@ -1,3 +1,5 @@
+import { UNIT_ONE_FIGURES } from "./UnitOneFigures";
+import { NaturalLab, PlaceLab, RoundingLab, LineLab, ParallelLab } from "./UnitOneLabs";
 import type { ComponentType, ReactNode } from "react";
 import { LineChart } from "@/components/charts/LineChart";
 import { PLOT_DATASETS, RAIN_DATASET, STUDENTS_DATASET } from "./datasets";
@@ -25,6 +27,11 @@ function ActPlotMeals() {
 }
 
 export const ACTIVITY_REGISTRY: Record<string, ComponentType> = {
+  "unit1-lab-2": NaturalLab,
+  "unit1-lab-3": PlaceLab,
+  "unit1-lab-4": RoundingLab,
+  "unit1-lab-5": LineLab,
+  "unit1-lab-6": ParallelLab,
   /** انطلاقة (1): وضع النقاط A,B,C,D على شبكة الإحداثيات. */
   "act-grid-plot": CoordinateGridPlot,
   /** انطلاقة (2): قراءة تمثيل الطلاب وملء جدول السنوات. */
@@ -51,6 +58,7 @@ const apples = PLOT_DATASETS.apples;
 const meals = PLOT_DATASETS.meals;
 
 export const FIGURE_REGISTRY: Record<string, ReactNode> = {
+  ...UNIT_ONE_FIGURES,
   /** خطوة «ثانيًا» من مثال الكتاب: النقاط فقط بلا وصل. */
   "fig-latakia-points": (
     <LineChart

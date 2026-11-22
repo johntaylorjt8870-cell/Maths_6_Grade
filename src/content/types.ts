@@ -111,6 +111,8 @@ export interface NotebookLine {
 export interface NotebookGroup {
   heading: string;
   lines: NotebookLine[];
+  /** كتل ثابتة لإدراج الجداول والأمثلة كاملة في الدفتر، دون تفاعلات. */
+  blocks?: Exclude<LessonBlock, ActivityBlock | ExerciseBlock>[];
   figures?: { figureId: string; caption: string; source: ContentSource }[];
 }
 

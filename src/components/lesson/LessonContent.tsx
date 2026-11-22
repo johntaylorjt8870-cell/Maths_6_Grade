@@ -379,6 +379,7 @@ function Notebook({ notebook, lessonTitle }: { notebook: LessonNotebook; lessonT
                 </SourcedLine>
               ))}
             </ul>
+            {group.blocks && <div className="notebook-blocks mt-3 space-y-4">{group.blocks.map((block, bi) => <Block key={bi} block={block} />)}</div>}
             {group.figures && (
               <div className="mt-3 space-y-3">
                 {group.figures.map((figure) => <LessonFigure key={figure.figureId} {...figure} />)}
