@@ -1,4 +1,27 @@
 import type { ReactNode } from "react";
+import { ABRP_POINTS, ABRP_LINES, ABRP_INTERSECTIONS, ABRP_EXTENTS, PERP_CASE_LINES, PERP_CASE_POINTS, PARALLEL_CASE_LINES, PARALLEL_CASE_POINTS, pointOn, type Segment2 } from "./UnitOneGeometry";
+import { SourceTag } from "../SourceTag";
+
+const asLine = ([a, b]: Segment2): [number, number, number, number] => [a[0], a[1], b[0], b[1]];
+
+function AbrpFigure() {
+  const points: P[] = Object.entries(ABRP_POINTS).map(([label, [x, y]]) => [x, y, label]);
+  return <div className="space-y-3">
+    <Diagram title="معطيات الكتاب: A وB على (AB)، وR وP على (RP)" height={270}
+      lines={[asLine([pointOn(ABRP_LINES.AB, -0.35), pointOn(ABRP_LINES.AB, 1.25)]), asLine([pointOn(ABRP_LINES.RP, -1.25), pointOn(ABRP_LINES.RP, 2.5)])]} points={points}/>
+    <div className="rounded-lg border border-amber-300 p-2" data-abrp-construction>
+      <p className="text-sm"><SourceTag source="extra"/> إثراء — من إعداد المنصة: الإنشاء المطلوب بعد تمديد المستقيمات. الخطوط المتقطعة إضافات توضيحية وليست من الرسم الأصلي.</p>
+      <svg className="unit-one-figure w-full" viewBox="0 45 490 310" role="img" aria-label="الإنشاء: M تقاطع AB وRP؛ N تقاطع AR وBP؛ O تقاطع AP وBR">
+        <title>تقاطع المستقيمات الستة — إنشاء توضيحي</title>
+        <g fill="none" strokeWidth="1.5">{Object.entries(ABRP_EXTENTS).map(([name, [[x1,y1],[x2,y2]]], i) => <line key={name} data-line={name} x1={x1} y1={y1} x2={x2} y2={y2} stroke={["#2766b0","#2766b0","#9b5700","#9b5700","#8052a6","#8052a6"][i]} strokeDasharray={i < 2 ? undefined : "6 4"}/>)}</g>
+        {Object.entries({...ABRP_POINTS, ...ABRP_INTERSECTIONS}).map(([label, [x,y]]) => <g key={label} data-point={label}>
+          <circle cx={x} cy={y} r="3" fill="#18253d"/>
+          <text x={x + (["O", "P", "N"].includes(label) ? 12 : -12)} y={y + (label === "N" || label === "R" || label === "P" ? 20 : -12)} style={{fontSize: 22}} fill="#18253d">{label}</text>
+        </g>)}
+      </svg>
+    </div>
+  </div>;
+}
 
 /** إعادة رسم العلاقات والتسميات من ص 6،16–23. إحداثيات العرض ليست أطوالًا معطاة في الكتاب. */
 type P = [number, number, string];
@@ -50,7 +73,7 @@ export const UNIT_ONE_FIGURES: Record<string,ReactNode> = {
  "u1-extend-after": <Diagram title="التقاطع بعد التمديد في C" lines={[[60,60,310,60],[80,180,310,100,"#333"]]} points={[[425,60,"C"]]}><path d="M310 60H480 M310 100L480 40.87" stroke="#666" fill="none" strokeDasharray="8 6"/><Label x={40} y={60}>(L)</Label><Label x={60} y={190}>(d)</Label></Diagram>,
  "u1-abc-practice": <Diagram title="النقاط A B C" height={110} lines={[[50,60,550,60,"#777"]]} points={[[120,60,"A"],[250,60,"B"],[450,60,"C"]]}/>,
  "u1-dlt": <Diagram title="المستقيمات d وL وT قبل التمديد" height={260} lines={[[280,20,400,240,"#333"],[110,190,360,60,"#d84c46"],[110,210,310,210]]}><Label x={290} y={15}>(d)</Label><Label x={95} y={185}>(L)</Label><Label x={130} y={236}>(T)</Label></Diagram>,
- "u1-abrp": <Diagram title="A B وR P" lines={[[60,95,490,25],[60,140,550,200]]} points={[[140,81.98,"A"],[430,34.77,"B"],[200,157.14,"R"],[350,175.51,"P"]]}/>,
+ "u1-abrp": <AbrpFigure/>,
  "u1-square": <Diagram title="ABCD وقطراه المتقاطعان في O" height={300} lines={[[180,260,400,260],[400,260,400,40],[400,40,180,40],[180,40,180,260],[180,40,400,260],[180,260,400,40]]} points={[[180,260,"A"],[400,260,"B"],[400,40,"C"],[180,40,"D"],[290,150,"O"]]}/>,
  "u1-hnpm": <Diagram title="HNPM وHM وPN والتقاطع G" height={310} lines={[[200,30,350,30],[200,30,200,180],[200,180,350,280],[350,280,350,30],[200,30,350,280],[200,180,350,30]]} points={[[200,30,"H"],[350,30,"N"],[200,180,"P"],[350,280,"M"],[256.25,123.75,"G"]]}/>,
  "u1-two-slants": <Diagram title="خطّان يحتاجان إلى التمديد" height={130} lines={[[160,85,360,30,"#333"],[280,110,410,30,"#333"]]}/>,
@@ -70,6 +93,6 @@ export const UNIT_ONE_FIGURES: Record<string,ReactNode> = {
  "u1-relations": <Diagram title="العلاقات بين d L M N T" height={320} lines={[[190,300,260,20],[370,300,440,20],[130,90,520,187.5,"#333"],[110,190,470,280,"#333"],[150,280,500,70,"#333"]]}><Right x={235.882} y={116.471} rotate={14.036}/><Right x={405.294} y={158.824} rotate={194.036}/><Right x={211.176} y={215.294} rotate={194.036}/><Label x={260} y={18}>(d)</Label><Label x={105} y={90}>(L)</Label><Label x={85} y={195}>(M)</Label><Label x={135} y={300}>(N)</Label><Label x={375} y={315}>(T)</Label></Diagram>,
  "u1-practice-perps": <Diagram title="L وT عموديان على d" height={260} lines={[[100,150,300,30],[240,230,440,110],[200,30,320,230,"#333"]]}><Right x={226.471} y={74.118} rotate={149.036}/><Right x={298.824} y={194.706} rotate={149.036}/><Label x={85} y={160}>(T)</Label><Label x={440} y={105}>(L)</Label><Label x={340} y={245}>(d)</Label></Diagram>,
  "u1-d1234": <Diagram title="d1 d2 d3 d4" height={260} lines={[[100,150,470,45,"#333"],[160,230,430,153.38,"#333"],[170,20,232.43,240,"#333"],[380,10,442.43,230,"#333"]]}><Label x={85} y={150}>(d₁)</Label><Label x={145} y={240}>(d₂)</Label><Label x={170} y={18}>(d₃)</Label><Label x={467} y={240}>(d₄)</Label></Diagram>,
- "u1-perp-cases": <Diagram title="رسم العمود من نقطة خارج المستقيم أو عليه" lines={[[30,190,250,60,"#333"],[350,60,570,190,"#333"]]} points={[[107,144.5,"A"],[490,50,"A"]]}><Label x={255} y={55}>(d)</Label><Label x={345} y={55}>(d)</Label><Label x={140} y={215}>②</Label><Label x={470} y={215}>①</Label></Diagram>,
- "u1-parallel-cases": <Diagram title="رسم الموازي من نقطة خارج المستقيم أو عليه" lines={[[30,190,250,90,"#333"],[350,70,570,200,"#333"]]} points={[[118,150,"A"],[490,90,"A"]]}><Label x={255} y={85}>(d)</Label><Label x={345} y={65}>(d)</Label><Label x={140} y={215}>②</Label><Label x={470} y={215}>①</Label></Diagram>,
+ "u1-perp-cases": <Diagram title="رسم العمود من نقطة خارج المستقيم أو عليه" height={240} lines={PERP_CASE_LINES.map(line => [...asLine(line), "#333"])} points={PERP_CASE_POINTS.map(([x,y]) => [x,y,"A"])}><Label x={255} y={55}>(d)</Label><Label x={345} y={55}>(d)</Label><Label x={140} y={215}>②</Label><Label x={470} y={215}>①</Label></Diagram>,
+ "u1-parallel-cases": <Diagram title="رسم الموازي من نقطة خارج المستقيم أو عليه" height={240} lines={PARALLEL_CASE_LINES.map(line => [...asLine(line), "#333"])} points={PARALLEL_CASE_POINTS.map(([x,y]) => [x,y,"A"])}><Label x={255} y={85}>(d)</Label><Label x={345} y={65}>(d)</Label><Label x={140} y={215}>②</Label><Label x={470} y={215}>①</Label></Diagram>,
 };
