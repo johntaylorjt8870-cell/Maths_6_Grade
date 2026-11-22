@@ -1,3 +1,8 @@
+import { LESSON_1_2_CONTENT } from "./lessons/lesson-1-2";
+import { LESSON_1_3_CONTENT } from "./lessons/lesson-1-3";
+import { LESSON_1_4_CONTENT } from "./lessons/lesson-1-4";
+import { LESSON_1_5_CONTENT } from "./lessons/lesson-1-5";
+import { LESSON_1_6_CONTENT } from "./lessons/lesson-1-6";
 import type { Curriculum, Lesson } from "./types";
 import { LESSON_1_1_CONTENT } from "./lessons/lesson-1-1";
 
@@ -21,7 +26,7 @@ import { LESSON_1_1_CONTENT } from "./lessons/lesson-1-1";
  *
  * قاعدة النشر: لا يُعرض محتوى أي درس إلا بحالة `published` وله `content`.
  * الدرس الأول (التمثيل البياني بالخطوط) نُشر بعد بناء محتواه من صفحاته
- * (ص 3-5). بقية الدروس `indexed`: عناوين من الفهرس فقط، بلا أي محتوى.
+ * (ص 3-5). الدروس 2–6 أضيفت من صور ص 6–23؛ بقية الدروس indexed بلا محتوى.
  */
 
 /** اختصار لدرس مُدرج في الفهرس بلا محتوى بعد. */
@@ -50,11 +55,11 @@ export const CURRICULUM: Curriculum = [
         summary: "تمثيل البيانات التي تتغيّر مع الزمن بنقاط على شبكة الإحداثيات ثم وصلها بخطوط مستقيمة.",
         content: LESSON_1_1_CONTENT,
       },
-      indexed("lesson-1-2", 2, "الأعداد الطبيعية (1)", "6-7"),
-      indexed("lesson-1-3", 3, "الأعداد الطبيعية (2)", "8-12"),
-      indexed("lesson-1-4", 4, "الأعداد الطبيعية (3)", "13-15"),
-      indexed("lesson-1-5", 5, "المستقيم", "16-18"),
-      indexed("lesson-1-6", 6, "التعامد والتوازي", "19-23"),
+      { id: "lesson-1-2", number: 2, title: "الأعداد الطبيعية (1)", pageRange: "6-7", status: "published", content: LESSON_1_2_CONTENT },
+      { id: "lesson-1-3", number: 3, title: "الأعداد الطبيعية (2)", pageRange: "8-12", status: "published", content: LESSON_1_3_CONTENT },
+      { id: "lesson-1-4", number: 4, title: "الأعداد الطبيعية (3)", pageRange: "13-15", status: "published", content: LESSON_1_4_CONTENT },
+      { id: "lesson-1-5", number: 5, title: "المستقيم", pageRange: "16-18", status: "published", content: LESSON_1_5_CONTENT },
+      { id: "lesson-1-6", number: 6, title: "التعامد والتوازي", pageRange: "19-23", status: "published", content: LESSON_1_6_CONTENT },
       indexed("lesson-1-7", 7, "الزوايا", "24-27"),
       indexed("lesson-1-8", 8, "تصنيف المثلث", "28-31"),
     ],

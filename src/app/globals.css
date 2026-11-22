@@ -263,3 +263,27 @@ textarea {
     max-width: 130mm;
   }
 }
+
+/* رسوم الدروس 2–6: تثبيت أحجام التسميات داخل viewBox عند التصغير. */
+.unit-one-figure text { font-size: 18px; }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  .notebook-blocks p { font-size: 11pt; line-height: 1.7; }
+  .notebook-blocks > div, .notebook-blocks > figure { break-inside: avoid-page; }
+  .notebook-blocks table { min-width: 0; width: 100%; table-layout: fixed; font-size: 9pt; }
+  .notebook-blocks th, .notebook-blocks td { padding: 3mm 1mm; overflow-wrap: anywhere; }
+  .notebook-blocks figure { overflow: visible; }
+  .notebook-blocks .math-block { overflow: visible; font-size: 10pt; }
+  .notebook-blocks .unit-one-figure { max-height: 65mm !important; }
+}
+
+/* يقتصر إصلاح تجاوز أزرار التنقل عند 360px على الدروس المضافة. */
+@media (max-width: 400px) {
+  .lesson-steps-root:has([data-lab]) .lesson-steps-chrome .btn {
+    padding-inline: 0.7rem;
+  }
+}
+@media print {
+  .notebook-group:has(.notebook-blocks) > ul:empty { display: none; }
+  .notebook-blocks > :first-child { break-before: avoid-page; }
+}
