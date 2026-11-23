@@ -48,6 +48,37 @@ try {
     await page.getByRole("button", { name: "المرحلة التالية" }).click();
     const practiceTasks = page.locator(".lesson-stage:not([hidden]) .book-practice");
     assert.equal(await practiceTasks.count(), 5, "practice stage has all five groups interactive");
+    const practiceLine = practiceTasks.nth(0);
+    for (const n of [200, 210]) await practiceLine.getByRole("button", { name: String(n), exact: true }).click();
+    await practiceLine.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await practiceLine.getByRole("status").innerText(), /اخترت/);
+    await practiceLine.getByRole("button", { name: "أحتاج تلميحًا" }).click();
+    assert.match(await practiceLine.getByRole("status").innerText(), /استبعد طرفي المجال/);
+    await practiceLine.getByRole("button", { name: "إعادة المحاولة" }).click();
+    for (let n = 201; n < 210; n++) await practiceLine.getByRole("button", { name: String(n), exact: true }).click();
+    await practiceLine.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await practiceLine.getByRole("status").innerText(), /أحسنت/);
+    await practiceLine.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `test-results/pr5/lesson-2/practice-number-line-${viewport.width}.png` });
+
+    const practiceClassify = practiceTasks.nth(1);
+    const bucket = (name) => practiceClassify.locator(`section[aria-label="خانة ${name}"]`);
+    const move = async (category, item) => bucket(category).getByRole("button", { name: `صنّف ${item} في ${category}`, exact: true }).click();
+    await move("عدد طبيعي", "$258.32$");
+    for (const [category, item] of [["عدد طبيعي", "$8$"], ["عدد طبيعي", "$2369870$"], ["كسر", "$\\frac{15587}{8369}$"], ["عدد طبيعي", "$0$"], ["عدد طبيعي", "$10000$"]]) await move(category, item);
+    assert.equal(await practiceClassify.getByRole("button", { name: "تحقّق من إجابتي" }).isEnabled(), false, "must refuse classification while an item is still unassigned");
+    await move("عدد عشري", "$0.3$");
+    await practiceClassify.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await practiceClassify.getByRole("status").innerText(), /صنفت بشكل صحيح 6 من 7/);
+    await practiceClassify.getByRole("button", { name: "أحتاج تلميحًا" }).click();
+    assert.match(await practiceClassify.getByRole("status").innerText(), /كسر مكتوب|كسر/);
+    await practiceClassify.getByRole("button", { name: "إعادة المحاولة" }).click();
+    for (const [category, item] of [["عدد طبيعي", "$8$"], ["عدد عشري", "$258.32$"], ["عدد طبيعي", "$2369870$"], ["كسر", "$\\frac{15587}{8369}$"], ["عدد طبيعي", "$0$"], ["عدد طبيعي", "$10000$"], ["عدد عشري", "$0.3$"]]) await move(category, item);
+    await practiceClassify.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await practiceClassify.getByRole("status").innerText(), /أحسنت/);
+    await practiceClassify.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `test-results/pr5/lesson-2/practice-classification-${viewport.width}.png` });
+
     const sets = practiceTasks.nth(2);
     await sets.locator("input").fill("1,2,3,5");
     await sets.getByRole("button", { name: "تحقّق من إجابتي" }).click();

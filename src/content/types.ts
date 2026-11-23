@@ -87,7 +87,9 @@ export interface BookPracticeBlock {
   type: "bookPractice";
   source: "book";
   prompt: string;
-  mode: "numberLine" | "classify" | "setEntry" | "reflection";
+  mode: "numberLine" | "classify" | "setEntry" | "reflection" | "form";
+  fields?: { label: string; expected?: string | string[]; hint?: string }[];
+  fieldsLayout?: "table";
   min?: number;
   max?: number;
   targets?: number[];
