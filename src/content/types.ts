@@ -90,6 +90,7 @@ export interface BookPracticeBlock {
   mode: "numberLine" | "classify" | "setEntry" | "reflection" | "form";
   fields?: { label: string; expected?: string | string[]; hint?: string }[];
   fieldsLayout?: "table";
+  validator?: "sixDigitPuzzle";
   min?: number;
   max?: number;
   targets?: number[];

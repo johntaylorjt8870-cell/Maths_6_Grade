@@ -24,6 +24,7 @@ export function BookPracticeActivity(task: BookPracticeBlock) {
   const fields = task.fields ?? [];
   const fieldsFilled = fields.length > 0 && fields.every((_, i) => Boolean(formValues[i]?.trim()));
   const correctFields = fields.filter((field, i) => !field.expected || (Array.isArray(field.expected) ? field.expected : [field.expected]).some((expected) => normalizeAnswer(formValues[i] ?? "") === normalizeAnswer(expected))).length;
+  const puzzleErrors = task.validator === "sixDigitPuzzle" ? validateSixDigitPuzzle(formValues[0] ?? "") : [];
   const success = task.mode === "numberLine"
     ? points.length === (task.targets?.length ?? 0) && task.targets?.every((n) => points.includes(n))
     : task.mode === "classify"
@@ -31,7 +32,7 @@ export function BookPracticeActivity(task: BookPracticeBlock) {
       : task.mode === "setEntry"
         ? sameSet(answer.split(/[،,\s]+/).filter(Boolean), task.expectedSet ?? [])
         : task.mode === "form"
-          ? fieldsFilled && correctFields === fields.length
+          ? fieldsFilled && (task.validator === "sixDigitPuzzle" ? puzzleErrors.length === 0 : correctFields === fields.length)
           : done;
 
   const reset = () => { setPoints([]); setAssignments({}); setAnswer(""); setReflection(""); setFormValues([]); setChecked(false); setShowHint(false); setDone(false); };
@@ -99,11 +100,21 @@ export function BookPracticeActivity(task: BookPracticeBlock) {
       {checked && !success && <button type="button" className="btn btn-ghost" onClick={() => setShowHint(true)}>أحتاج تلميحًا</button>}
     </div>
     {checked && <p role="status" className={`mt-3 rounded-xl p-3 font-semibold leading-7 ${success ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}`}>
-      {success ? task.mode === "form" && fields.some((field) => !field.expected) ? <>أكملت تسجيل الفروع المفتوحة. قارنها بجدول الخانات وفكّر في صحة تمثيلك.</> : <>أحسنت! {task.explanation}</> : task.mode === "classify" ? `صنفت بشكل صحيح ${correctAssigned} من ${(task.items ?? []).length} عناصر. راجع القاعدة ثم حاول مجددًا.` : task.mode === "numberLine" ? `اخترت ${points.length} نقطة. قارن مواضعك بحدّي السؤال، ثم راجع تلميحك إن احتجت.` : task.mode === "form" ? `الإجابات المكتملة الصحيحة: ${correctFields} من ${fields.length}. راجع القيم التي أدخلتها وحاول مجددًا.` : "لم تكتمل الإجابة بعد. راجع الشرط في السؤال وحاول مرة أخرى."}
+      {success ? task.mode === "form" && !task.validator && fields.some((field) => !field.expected) ? <>أكملت تسجيل الفروع المفتوحة. قارنها بجدول الخانات وفكّر في صحة تمثيلك.</> : <>أحسنت! {task.explanation}</> : task.mode === "classify" ? `صنفت بشكل صحيح ${correctAssigned} من ${(task.items ?? []).length} عناصر. راجع القاعدة ثم حاول مجددًا.` : task.mode === "numberLine" ? `اخترت ${points.length} نقطة. قارن مواضعك بحدّي السؤال، ثم راجع تلميحك إن احتجت.` : task.mode === "form" && task.validator === "sixDigitPuzzle" ? `تحقق من هذه الشروط: ${puzzleErrors.join("، ")}.` : task.mode === "form" ? `الإجابات المكتملة الصحيحة: ${correctFields} من ${fields.length}. راجع القيم التي أدخلتها وحاول مجددًا.` : "لم تكتمل الإجابة بعد. راجع الشرط في السؤال وحاول مرة أخرى."}
       {!success && showHint && <span className="mt-1 block">تلميح: {task.hint}</span>}
     </p>}
     {task.mode === "reflection" && done && <p role="status" className="mt-3 rounded-xl bg-emerald-50 p-3 font-semibold text-emerald-900">تم حفظ فكرتك لهذه المحاولة. {task.explanation}</p>}
   </div>;
+}
+
+function validateSixDigitPuzzle(raw: string) {
+  const digits = normalizeAnswer(raw).replace(/\\D/g, "");
+  const errors: string[] = [];
+  if (digits.length !== 6) return ["العدد يجب أن يتكوّن من ست خانات"];
+  if (digits[0] !== "3") errors.push("رقم خانة مئات الألوف يجب أن يكون 3");
+  if (digits[5] !== "3") errors.push("رقم خانة الآحاد يجب أن يكون 3");
+  if (Number(digits[2]) + Number(digits[3]) !== 3) errors.push("مجموع رقمي خانة آحاد الألوف والمئات يجب أن يساوي 3");
+  return errors;
 }
 
 function normalizeAnswer(value: string) {

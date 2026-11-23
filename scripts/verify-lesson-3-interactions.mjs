@@ -68,10 +68,37 @@ try {
       ["5000000000+40000000+500000+30000+4000+500+60", "خمسة مليارات وأربعمئة وخمسة ملايين وثلاثمئة وخمسة وأربعون ألفًا وستة آلاف"],
       ["60000000"],
       ["5305707", "500305707"],
-      ["300123"],
+      ["301203"],
       ["5000000", "10"],
       ["14999992"],
     ];
+    const puzzle = tasks.nth(9);
+    await puzzle.locator("input").fill("123");
+    await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await puzzle.getByRole("status").innerText(), /ست خانات/);
+    await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
+    await puzzle.locator("input").fill("200123");
+    await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await puzzle.getByRole("status").innerText(), /مئات الألوف يجب أن يكون 3/);
+    await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
+    await puzzle.locator("input").fill("300122");
+    await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await puzzle.getByRole("status").innerText(), /الآحاد يجب أن يكون 3/);
+    await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
+    await puzzle.locator("input").fill("300113");
+    await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await puzzle.getByRole("status").innerText(), /مجموع رقمي خانة آحاد الألوف والمئات/);
+    await puzzle.getByRole("button", { name: "أحتاج تلميحًا" }).click();
+    assert.match(await puzzle.getByRole("status").innerText(), /اختر رقمي آحاد الألوف والمئات/);
+    await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
+    await puzzle.locator("input").fill("301203");
+    await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await puzzle.getByRole("status").innerText(), /تحقق العدد من عدد الخانات/);
+    await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
+    await puzzle.locator("input").fill("302103");
+    await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await puzzle.getByRole("status").innerText(), /تحقق العدد من عدد الخانات/);
+
     const wrongGroup = tasks.nth(3);
     await wrongGroup.locator("input").fill("1");
     await wrongGroup.getByRole("button", { name: "تحقّق من إجابتي" }).click();
@@ -84,8 +111,8 @@ try {
       const values = answers[g];
       for (let f = 0; f < values.length; f++) await task.locator("input").nth(f).fill(values[f]);
       await task.getByRole("button", { name: "تحقّق من إجابتي" }).click();
-      if (![0, 2, 6, 9].includes(g)) assert.match(await task.getByRole("status").innerText(), /أحسنت/ , `practice group ${g + 1}`);
-      else assert.match(await task.getByRole("status").innerText(), /أكملت تسجيل الفروع المفتوحة/ , `open response group ${g + 1}`);
+      if ([0, 2, 6].includes(g)) assert.match(await task.getByRole("status").innerText(), /أكملت تسجيل الفروع المفتوحة/ , `open response group ${g + 1}`);
+      else assert.match(await task.getByRole("status").innerText(), /أحسنت/ , `practice group ${g + 1}`);
     }
     await tasks.nth(4).scrollIntoViewIfNeeded();
     await page.screenshot({ path: `test-results/pr5/lesson-3/place-table-${viewport.width}.png` });
