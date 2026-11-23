@@ -82,6 +82,22 @@ export interface ExerciseBlock {
   source?: ContentSource;
 }
 
+/** تفاعل محلي مرتبط بتمرين الكتاب؛ نص السؤال يبقى منقولًا في prompt كما هو. */
+export interface BookPracticeBlock {
+  type: "bookPractice";
+  source: "book";
+  prompt: string;
+  mode: "numberLine" | "classify" | "setEntry" | "reflection";
+  min?: number;
+  max?: number;
+  targets?: number[];
+  items?: string[];
+  buckets?: { label: string; items: string[] }[];
+  expectedSet?: string[];
+  hint: string;
+  explanation: string;
+}
+
 /** ملخص الدرس — يُنسب كل بند إلى مصدره، لا القائمة المختلطة ككل. */
 export interface SummaryBlock {
   type: "summary";
@@ -96,6 +112,7 @@ export type LessonBlock =
   | FigureBlock
   | ActivityBlock
   | ExerciseBlock
+  | BookPracticeBlock
   | SummaryBlock;
 
 /* ───────────── دفتر الطالب ───────────── */
@@ -112,7 +129,7 @@ export interface NotebookGroup {
   heading: string;
   lines: NotebookLine[];
   /** كتل ثابتة لإدراج الجداول والأمثلة كاملة في الدفتر، دون تفاعلات. */
-  blocks?: Exclude<LessonBlock, ActivityBlock | ExerciseBlock>[];
+  blocks?: Exclude<LessonBlock, ActivityBlock | ExerciseBlock | BookPracticeBlock>[];
   figures?: { figureId: string; caption: string; source: ContentSource }[];
 }
 

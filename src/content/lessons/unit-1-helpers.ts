@@ -51,7 +51,7 @@ export function lesson(number: number, title: string, sections: LessonSection[],
       intro: "مرجع الدرس: المفاهيم والأمثلة والجداول والرسومات وأسئلة الكتاب. التفاعلات واختبار المنصة ليست جزءًا من نص الكتاب. تظهر مصادر الفقرات بجانبها.",
       groups: [...sections, summary].map(s => ({
         heading: s.title, lines: [],
-        blocks: s.blocks.filter((b): b is Exclude<LessonBlock, { type: "activity" | "exercise" }> => b.type !== "activity" && b.type !== "exercise" && (s.id !== "lab" || ("source" in b && b.source === "book"))),
+        blocks: s.blocks.filter((b): b is Exclude<LessonBlock, { type: "activity" | "exercise" | "bookPractice" }> => b.type !== "activity" && b.type !== "exercise" && b.type !== "bookPractice" && (s.id !== "lab" || ("source" in b && b.source === "book"))),
       })).filter(group => group.blocks.length > 0),
     },
   };
