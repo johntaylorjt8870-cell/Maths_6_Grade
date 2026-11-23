@@ -108,7 +108,7 @@ export function BookPracticeActivity(task: BookPracticeBlock) {
 }
 
 function validateSixDigitPuzzle(raw: string) {
-  const digits = normalizeAnswer(raw).replace(/\\D/g, "");
+  const digits = normalizeAnswer(raw).replace(/\D/g, "");
   const errors: string[] = [];
   if (digits.length !== 6) return ["العدد يجب أن يتكوّن من ست خانات"];
   if (digits[0] !== "3") errors.push("رقم خانة مئات الألوف يجب أن يكون 3");
@@ -118,7 +118,7 @@ function validateSixDigitPuzzle(raw: string) {
 }
 
 function normalizeAnswer(value: string) {
-  return value.replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[،,\\s]/g, "").trim();
+  return value.replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit))).replace(/[،,\s]/g, "").trim();
 }
 function sameSet(input: string[], expected: string[]) {
   const a = input.map(normalizeAnswer).sort();

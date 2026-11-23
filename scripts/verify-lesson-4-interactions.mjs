@@ -31,7 +31,7 @@ try {
     await round100m.getByRole("button", { name: "تحقّق من إجابتي" }).click();
     assert.match(await round100m.getByRole("status").innerText(), /أحسنت/);
     const order = tasks.nth(2);
-    await order.locator("input").fill("9654322,29654321,59654324,239654323");
+    await order.locator("input").fill("9654322, 29654321, 59654324, 239654323");
     await order.getByRole("button", { name: "تحقّق من إجابتي" }).click();
     assert.match(await order.getByRole("status").innerText(), /أحسنت/);
 
@@ -56,7 +56,7 @@ try {
     await page.screenshot({ path: `test-results/pr5/lesson-4/rounding-table-${viewport.width}.png` });
 
     const orderLarge = tasks.nth(2);
-    await orderLarge.locator("input").fill("502586100,5000586010,5002586100,5100000000");
+    await orderLarge.locator("input").fill("502586100, 5000586010, 5002586100, 5100000000");
     await orderLarge.getByRole("button", { name: "تحقّق من إجابتي" }).click();
     assert.match(await orderLarge.getByRole("status").innerText(), /أحسنت/);
 

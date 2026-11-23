@@ -73,7 +73,7 @@ try {
       ["14999992"],
     ];
     const puzzle = tasks.nth(9);
-    await puzzle.locator("input").fill("123");
+    await puzzle.locator("input").fill("3-1203");
     await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
     assert.match(await puzzle.getByRole("status").innerText(), /ست خانات/);
     await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
@@ -92,6 +92,10 @@ try {
     assert.match(await puzzle.getByRole("status").innerText(), /اختر رقمي آحاد الألوف والمئات/);
     await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
     await puzzle.locator("input").fill("301203");
+    await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
+    assert.match(await puzzle.getByRole("status").innerText(), /تحقق العدد من عدد الخانات/);
+    await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
+    await puzzle.locator("input").fill("٣٠١٢٠٣");
     await puzzle.getByRole("button", { name: "تحقّق من إجابتي" }).click();
     assert.match(await puzzle.getByRole("status").innerText(), /تحقق العدد من عدد الخانات/);
     await puzzle.getByRole("button", { name: "إعادة المحاولة" }).click();
