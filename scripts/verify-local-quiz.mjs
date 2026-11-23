@@ -21,7 +21,7 @@ try {
     assert.match(await question.getByRole("status").innerText(), /ليست هذه المرة/);
     assert.equal(await question.getByText("الصحيح", { exact: true }).count(), 0, "must not reveal the correct option");
     await question.getByRole("button", { name: "أعطني تلميحًا" }).click();
-    assert.match(await question.getByRole("status").innerText(), /الصفر يعدّ|تذكّر|فكّر/);
+    assert.match(await question.getByRole("status").innerText(), /تخيّل المجموعة قبل العدّ/);
     assert.equal(await question.getByText("الصحيح", { exact: true }).count(), 0);
     await page.screenshot({ path: `${out}/quiz-wrong-hint-${viewport.width}.png` });
     await question.getByRole("button", { name: "إعادة المحاولة" }).click();

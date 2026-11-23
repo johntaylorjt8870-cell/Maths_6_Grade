@@ -165,6 +165,8 @@ export interface QuizQuestion {
   choices: QuizChoice[];
   /** معرّف الخيار الصحيح. */
   correctChoiceId: string;
+  /** تلميح مفاهيمي تدريجي، لا يكشف الاختيار الصحيح. */
+  hint?: string;
   /** تفسير الإجابة بعد التصحيح. */
   explanation?: string;
   explanationTex?: Tex;

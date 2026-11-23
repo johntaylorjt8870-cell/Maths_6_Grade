@@ -54,7 +54,7 @@ export function LocalQuiz({ quiz }: { quiz: Quiz }) {
               </div>
               {isChecked && <div role="status" className={`mt-4 rounded-xl p-3 leading-7 ${isCorrect ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-950"}`}>
                 <strong>{isCorrect ? "أحسنت! إجابتك صحيحة." : "ليست هذه المرة؛ جرّب التفكير من زاوية أخرى."}</strong>{isCorrect && (q.explanation || q.explanationTex) && <span> <RichText text={q.explanation ?? ""} />{q.explanationTex && <span className="math-inline ms-1" dir="ltr"><M tex={q.explanationTex} /></span>}</span>}
-                {!isCorrect && hints[q.id] && <p className="mt-1">تلميح: {hintFor(q.prompt)}</p>}
+                {!isCorrect && hints[q.id] && <p className="mt-1">تلميح: {q.hint ?? hintFor(q.prompt)}</p>}
                 {!isCorrect && <button type="button" className="mt-2 me-3 rounded-lg px-3 py-2 font-semibold text-brand underline" onClick={() => setHints((prev) => ({ ...prev, [q.id]: true }))}>أعطني تلميحًا</button>}
                 {!isCorrect && <button type="button" className="mt-2 rounded-lg bg-white px-3 py-2 font-semibold text-brand shadow-sm" onClick={() => { setChecked((prev) => { const next = { ...prev }; delete next[q.id]; return next; }); setAnswers((prev) => { const next = { ...prev }; delete next[q.id]; return next; }); }}>إعادة المحاولة</button>}
               </div>}
