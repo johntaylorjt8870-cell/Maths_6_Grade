@@ -15,6 +15,18 @@ export function LocalQuiz({ quiz }: { quiz: Quiz }) {
   const total = quiz.questions.length;
   const score = total ? Math.round((correct / total) * 100) : 0;
   const progress = useMemo(() => total ? Math.round((attempted / total) * 100) : 0, [attempted, total]);
+  const hintFor = (prompt: string) => {
+    if (/سلة فارغة|مجموعة خالية|محتواها/.test(prompt)) return "فكّر في معنى العدّ عندما لا يوجد أي عنصر داخل المجموعة.";
+    if (/زوجي|فردي/.test(prompt)) return "تذكّر: قسمة العدد الزوجي على ٢ تترك باقيًا صفرًا؛ افحص الرقم الأخير.";
+    if (/مجموع أرقام|مضاعفات العدد 3|مضاعفات 3/.test(prompt)) return "اجمع أرقام العدد أولًا، ثم اختبر قابلية المجموع للقسمة على ٣؛ لا تحكم من الرقم الأخير.";
+    if (/مستقيم|يلي|السابق|التالي/.test(prompt)) return "تخيّل الحركة على مستقيم الأعداد: كل خطوة إلى اليمين تزيد وحدة واحدة.";
+    if (/تقريب|أقرب/.test(prompt)) return "حدّد منزلة التقريب، ثم انظر إلى الرقم الذي يقع مباشرةً على يمينها.";
+    if (/أكبر|أصغر|ترتيب|مقارنة/.test(prompt)) return "قارن القيم من المرتبة الأكبر إلى الأصغر، ولا تبدأ من الأرقام الأخيرة.";
+    if (/كسر|طبيعي|عشري/.test(prompt)) return "بسّط القيمة أو اكتبها بصورة واضحة، ثم قرّر إلى أي مجموعة تنتمي.";
+    if (/زاوية|متعامد|توازي|مستقيمين/.test(prompt)) return "ابحث عن العلاقة الهندسية المطلوبة في الرسم، وميّز بين التقاطع والتعامد والتوازي.";
+    if (/قراءة|رسم بياني|نقطة|محور/.test(prompt)) return "ابدأ بقراءة التدريج والمحورين، ثم طابق الموضع مع القيمة المطلوبة.";
+    return "أعد قراءة المطلوب وحدّد القاعدة الرياضية التي تختبرها المسألة، ثم استبعد الخيارات التي لا تحققها.";
+  };
 
   return (
     <div className="mt-4 space-y-5">
@@ -34,17 +46,15 @@ export function LocalQuiz({ quiz }: { quiz: Quiz }) {
               <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {q.choices.map((choice) => {
                   const selected = chosen === choice.id;
-                  const revealCorrect = isChecked && choice.id === q.correctChoiceId;
-                  return <label key={choice.id} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 transition hover:-translate-y-0.5 ${revealCorrect ? "border-emerald-500 bg-emerald-100" : selected && isChecked ? "border-amber-400 bg-amber-100" : selected ? "border-brand bg-brand-soft/50" : "border-ink/10 bg-white hover:border-brand/40"}`}>
+                  return <label key={choice.id} className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 transition hover:-translate-y-0.5 ${selected && isChecked ? isCorrect ? "border-emerald-500 bg-emerald-100" : "border-amber-400 bg-amber-100" : selected ? "border-brand bg-brand-soft/50" : "border-ink/10 bg-white hover:border-brand/40"}`}>
                     <input type="radio" name={q.id} value={choice.id} checked={selected} disabled={isChecked && isCorrect} onChange={() => { setAnswers((prev) => ({ ...prev, [q.id]: choice.id })); setChecked((prev) => { const next = { ...prev }; delete next[q.id]; return next; }); }} className="h-5 w-5 accent-[#4338ca]" />
                     <span className="flex-1"><RichText text={choice.text} />{choice.tex && <span className="math-inline ms-1" dir="ltr"><M tex={choice.tex} /></span>}</span>
-                    {revealCorrect && <span className="text-sm font-bold text-emerald-800">الصحيح</span>}
                   </label>;
                 })}
               </div>
               {isChecked && <div role="status" className={`mt-4 rounded-xl p-3 leading-7 ${isCorrect ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-950"}`}>
                 <strong>{isCorrect ? "أحسنت! إجابتك صحيحة." : "ليست هذه المرة؛ جرّب التفكير من زاوية أخرى."}</strong>{isCorrect && (q.explanation || q.explanationTex) && <span> <RichText text={q.explanation ?? ""} />{q.explanationTex && <span className="math-inline ms-1" dir="ltr"><M tex={q.explanationTex} /></span>}</span>}
-                {!isCorrect && hints[q.id] && <p className="mt-1">تلميح: راجع الفكرة أو العلاقة الرياضية التي يقيسها السؤال، ثم افحص الخيارات واحدةً واحدة.</p>}
+                {!isCorrect && hints[q.id] && <p className="mt-1">تلميح: {hintFor(q.prompt)}</p>}
                 {!isCorrect && <button type="button" className="mt-2 me-3 rounded-lg px-3 py-2 font-semibold text-brand underline" onClick={() => setHints((prev) => ({ ...prev, [q.id]: true }))}>أعطني تلميحًا</button>}
                 {!isCorrect && <button type="button" className="mt-2 rounded-lg bg-white px-3 py-2 font-semibold text-brand shadow-sm" onClick={() => { setChecked((prev) => { const next = { ...prev }; delete next[q.id]; return next; }); setAnswers((prev) => { const next = { ...prev }; delete next[q.id]; return next; }); }}>إعادة المحاولة</button>}
               </div>}
