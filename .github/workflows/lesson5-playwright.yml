@@ -39,7 +39,7 @@ jobs:
             "$@" 2>&1 | tee "/tmp/${name}.log"
             result=${PIPESTATUS[0]}
             if [ "$result" -ne 0 ]; then
-              grep -E 'Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error|Call log|waiting for|locator\.|getBy|^[[:space:]]+[0-9]+\)' "/tmp/${name}.log" | tail -n 50 | while IFS= read -r line; do echo "::error::$line"; done
+              grep -E 'Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error|Call log|waiting for|locator\.|getBy|horizontal overflow metrics|^[[:space:]]+[0-9]+\)' "/tmp/${name}.log" | tail -n 50 | while IFS= read -r line; do echo "::error::$line"; done
               return "$result"
             fi
           }

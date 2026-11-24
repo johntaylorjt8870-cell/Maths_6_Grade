@@ -11,7 +11,17 @@ export async function watchErrors(page) {
 }
 
 export async function assertNoHorizontalOverflow(page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+  const metrics = await page.evaluate(() => {
+    const offenders = [...document.querySelectorAll("body *")]
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && rect.right > window.innerWidth + 1 && getComputedStyle(element).position !== "fixed";
+      })
+      .slice(0, 8)
+      .map((element) => ({ tag: element.tagName, className: typeof element.className === "string" ? element.className : "svg", right: Math.round(element.getBoundingClientRect().right), width: Math.round(element.getBoundingClientRect().width) }));
+    return { scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth, offenders };
+  });
+  expect(metrics.scrollWidth, `horizontal overflow metrics: ${JSON.stringify(metrics)}`).toBeLessThanOrEqual(metrics.clientWidth);
 }
 
 const stageNames = { taheya: "التهيئة", discovery: "اكتشاف المفهوم", learn: "الشرح المفصل", lab: "النشاط / المختبر", check: "تحقق من فهمك", practice: "التطبيق", quiz: "اختبار الدرس", summary: "الملخص", notebook: "دفتر الطالب" };
