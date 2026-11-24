@@ -17,6 +17,7 @@ test("الدرس 3 — كتابة العدد: تصنيف جميع صيغ 3202000
     const correctBucket = activity.locator('[aria-label="خانة كتابة صحيحة"]');
     await correctBucket.locator('button[aria-label^="صنّف لبنى:"]').click();
     await correctBucket.locator('button[aria-label^="صنّف باسم:"]').click();
+    await correctBucket.locator('button[aria-label^="صنّف ماهر:"]').click();
     await expect(check).toBeEnabled();
     await check.click();
     await expect(activity.getByRole("status")).toContainText("صنفت بشكل صحيح 1 من 3");
