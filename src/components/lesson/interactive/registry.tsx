@@ -9,6 +9,7 @@ import { PlotPointsExercise } from "./PlotPointsExercise";
 import { GraphStudio } from "./GraphStudio";
 import { CheckAppleExercise } from "./CheckAppleExercise";
 import { RainReadingExercise } from "./RainReadingExercise";
+import { AngleCountActivity } from "./AngleCountActivity";
 
 /**
  * سجلا الأنشطة والتمارين والرسوم:
@@ -32,6 +33,8 @@ export const ACTIVITY_REGISTRY: Record<string, ComponentType> = {
   "unit1-lab-4": RoundingLab,
   "unit1-lab-5": LineLab,
   "unit1-lab-6": ParallelLab,
+  /** ص 6: إجابة أعداد الزوايا في الأشكال العشرة. */
+  "act-natural-angle-count": AngleCountActivity,
   /** انطلاقة (1): وضع النقاط A,B,C,D على شبكة الإحداثيات. */
   "act-grid-plot": CoordinateGridPlot,
   /** انطلاقة (2): قراءة تمثيل الطلاب وملء جدول السنوات. */

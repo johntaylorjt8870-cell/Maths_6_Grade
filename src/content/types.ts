@@ -88,7 +88,7 @@ export interface BookPracticeBlock {
   source: "book";
   prompt: string;
   mode: "numberLine" | "classify" | "setEntry" | "reflection" | "form" | "geometry";
-  geometryId?: "rspm" | "absmn" | "check-rays" | "check-intersection" | "abc-rays" | "dlt" | "abrp" | "parallel-shapes" | "parallel-point" | "parallel-mcq" | "parallel-relations" | "parallel-reason-1" | "parallel-reason-2" | "parallel-rebuild" | "parallel-perpendicular" | "parallel-parallel";
+  geometryId?: "rspm" | "absmn" | "check-rays" | "check-intersection" | "abc-rays" | "dlt" | "abrp" | "parallel-shapes" | "parallel-point" | "parallel-mcq" | "parallel-relations" | "parallel-reason-1" | "parallel-reason-2" | "parallel-rebuild" | "parallel-perpendicular" | "parallel-parallel" | "parallel-lab-pair" | "parallel-lab-point" | "parallel-lab-parallel-point";
   fields?: { label: string; expected?: string | string[]; hint?: string }[];
   fieldsLayout?: "table";
   validator?: "sixDigitPuzzle";

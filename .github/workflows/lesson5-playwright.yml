@@ -39,7 +39,7 @@ jobs:
             "$@" 2>&1 | tee "/tmp/${name}.log"
             result=${PIPESTATUS[0]}
             if [ "$result" -ne 0 ]; then
-              grep -E '\[lesson|Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error' "/tmp/${name}.log" | tail -n 50 | while IFS= read -r line; do echo "::error::$line"; done
+              grep -E 'Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error|^[[:space:]]+[0-9]+\)' "/tmp/${name}.log" | tail -n 50 | while IFS= read -r line; do echo "::error::$line"; done
               return "$result"
             fi
           }
@@ -50,6 +50,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: unit1-lessons-playwright-report
-          path: test-results/
+          path: |
+            test-results/
+            /tmp/abc-rays.log
+            /tmp/absmn.log
+            /tmp/all-lessons.log
           if-no-files-found: ignore
           retention-days: 7

@@ -25,6 +25,12 @@ async function choosePair(activity, sectionIndex, categoryIndex, label) {
   await activity.locator("section").nth(sectionIndex).locator("fieldset").nth(categoryIndex).getByRole("button", { name: label, exact: true }).click({ timeout: 4_000 });
 }
 
+async function drawLine(activity, start, end) {
+  const svg = activity.locator('svg[role="application"]');
+  const box = await svg.boundingBox();
+  for (const [x, y] of [start, end]) await svg.click({ position: { x: (x / 280) * box.width, y: (y / 150) * box.height } });
+}
+
 test.describe("الدرس السادس — التعامد والتوازي، تفاعلات الكتاب", () => {
   for (const width of widths) test(`الأنشطة والفروع على عرض ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -67,6 +73,32 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
         await mcq.getByRole("group", { name: "أ — المستقيمان المتقاطعان" }).getByRole("button", { name: "يشتركان في نقطة واحدة" }).click({ timeout: 4_000 });
         await mcq.getByRole("group", { name: "ب — المستقيمان المرسومان" }).getByRole("button", { name: "متقاطعان" }).click({ timeout: 4_000 });
       });
+
+    await page.goto(`${base}#lab`);
+    const labPair = page.getByTestId("parallel-practice-parallel-lab-pair");
+    await assertFeedbackCycle(labPair,
+      async () => {
+        await drawLine(labPair, [70, 35], [200, 35]);
+        await drawLine(labPair, [130, 12], [130, 140]);
+      },
+      async () => {
+        await drawLine(labPair, [130, 12], [130, 140]);
+        await drawLine(labPair, [70, 100], [210, 100]);
+      });
+    const labPoint = page.getByTestId("parallel-practice-parallel-lab-point");
+    await assertFeedbackCycle(labPoint,
+      async () => drawLine(labPoint, [70, 28], [200, 28]),
+      async () => drawLine(labPoint, [130, 12], [130, 105]));
+
+    await page.goto(`${base}#learn`);
+    const methodPerp = page.getByTestId("parallel-practice-parallel-lab-point");
+    await assertFeedbackCycle(methodPerp,
+      async () => drawLine(methodPerp, [70, 28], [200, 28]),
+      async () => drawLine(methodPerp, [130, 12], [130, 105]));
+    const methodParallel = page.getByTestId("parallel-practice-parallel-lab-parallel-point");
+    await assertFeedbackCycle(methodParallel,
+      async () => drawLine(methodParallel, [130, 12], [130, 140]),
+      async () => drawLine(methodParallel, [70, 28], [200, 28]));
 
     await page.goto(`${base}#check`);
     const relations = page.getByTestId("parallel-practice-parallel-relations");
@@ -117,28 +149,37 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
     const perpendicular = page.getByTestId("parallel-practice-parallel-perpendicular");
     await assertFeedbackCycle(perpendicular,
       async () => {
-        await perpendicular.locator("fieldset").nth(0).getByRole("button", { name: "موازٍ" }).click({ timeout: 4_000 });
-        await perpendicular.locator("fieldset").nth(1).getByRole("button", { name: "مائل غير عمودي" }).click({ timeout: 4_000 });
+        await drawLine(perpendicular.getByTestId("construction-perpendicular-1"), [70, 35], [200, 35]);
+        await drawLine(perpendicular.getByTestId("construction-perpendicular-2"), [70, 100], [200, 100]);
       },
       async () => {
-        await perpendicular.locator("fieldset").nth(0).getByRole("button", { name: "عمود صحيح" }).click({ timeout: 4_000 });
-        await perpendicular.locator("fieldset").nth(1).getByRole("button", { name: "عمود صحيح" }).click({ timeout: 4_000 });
+        await drawLine(perpendicular.getByTestId("construction-perpendicular-1"), [130, 12], [130, 105]);
+        await drawLine(perpendicular.getByTestId("construction-perpendicular-2"), [130, 12], [130, 140]);
       });
 
     const parallel = page.getByTestId("parallel-practice-parallel-parallel");
     await assertFeedbackCycle(parallel,
       async () => {
-        await parallel.locator("fieldset").nth(0).getByRole("button", { name: "عمودي" }).click({ timeout: 4_000 });
-        await parallel.locator("fieldset").nth(1).getByRole("button", { name: "موازٍ منفصل عن (d)" }).click({ timeout: 4_000 });
+        await drawLine(parallel.getByTestId("construction-parallel-1"), [130, 12], [130, 140]);
+        await drawLine(parallel.getByTestId("construction-parallel-2"), [70, 75], [200, 75]);
       },
       async () => {
-        await parallel.locator("fieldset").nth(0).getByRole("button", { name: "موازٍ من A خارج (d)" }).click({ timeout: 4_000 });
-        await parallel.locator("fieldset").nth(1).getByRole("button", { name: "منطبق على (d) عند A" }).click({ timeout: 4_000 });
+        await drawLine(parallel.getByTestId("construction-parallel-1"), [70, 28], [200, 28]);
+        await drawLine(parallel.getByTestId("construction-parallel-2"), [24, 100], [256, 100]);
       });
 
     await page.goto(`${base}#notebook`);
-    await expect(page.getByRole("heading", { name: "دفتر الطالب" })).toBeVisible({ timeout: 4_000 });
-    await expect(page.getByRole("button", { name: "طباعة الدفتر" })).toBeVisible({ timeout: 4_000 });
+    const notebook = page.locator("section#notebook.notebook-print");
+    await expect(notebook).toBeVisible({ timeout: 4_000 });
+    await expect(notebook.locator("p").filter({ hasText: "دفتر الطالب" }).first()).toBeVisible({ timeout: 4_000 });
+    await expect(notebook.getByRole("heading", { level: 2 })).toHaveCount(1, { timeout: 4_000 });
+    await expect(notebook.getByRole("heading", { level: 2 })).toContainText("التعامد والتوازي", { timeout: 4_000 });
+    await expect(notebook.getByRole("button", { name: "طباعة الدفتر" })).toBeVisible({ timeout: 4_000 });
+    await expect(notebook.locator(".notebook-group")).not.toHaveCount(0);
+    await expect(notebook.locator(".notebook-group li").first()).toBeVisible({ timeout: 4_000 });
+    await page.evaluate(() => { window.__printCalled = false; window.print = () => { window.__printCalled = true; }; });
+    await notebook.getByRole("button", { name: "طباعة الدفتر" }).click({ timeout: 4_000 });
+    await expect.poll(() => page.evaluate(() => window.__printCalled)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
     expect(consoleErrors).toEqual([]);
     expect(pageErrors).toEqual([]);

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { BookPracticeBlock } from "@/content/types";
+import { InteractiveLineConstruction } from "./InteractiveLineConstruction";
 
 const RELATIONS = [
   "(d) ⟂ (L)", "(d) ⟂ (M)", "(T) ⟂ (L)", "(T) ⟂ (M)",
@@ -23,8 +24,9 @@ export function ParallelBookPractice({ task }: { task: BookPracticeBlock }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
   const [hint, setHint] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const set = (key: string, value: string) => { setAnswers((old) => ({ ...old, [key]: value })); setChecked(false); setHint(false); };
-  const reset = () => { setAnswers({}); setChecked(false); setHint(false); };
+  const reset = () => { setAnswers({}); setChecked(false); setHint(false); setAttempt((value) => value + 1); };
 
   const required = id === "parallel-shapes" ? ["s1-intersect", "s1-perpendicular", "s1-parallel", "s2-intersect", "s2-perpendicular", "s2-parallel"]
     : id === "parallel-point" ? ["position"]
@@ -32,7 +34,10 @@ export function ParallelBookPractice({ task }: { task: BookPracticeBlock }) {
       : id === "parallel-relations" ? ["relations"]
         : id === "parallel-reason-1" || id === "parallel-reason-2" ? ["relation", "property"]
           : id === "parallel-rebuild" ? ["pair1", "pair2"]
-            : id === "parallel-perpendicular" || id === "parallel-parallel" ? ["case1", "case2"] : [];
+            : id === "parallel-perpendicular" || id === "parallel-parallel" ? ["case1", "case2"]
+              : id === "parallel-lab-pair" ? ["labPerp", "labParallel"]
+                : id === "parallel-lab-point" ? ["pointPerp"]
+                  : id === "parallel-lab-parallel-point" ? ["pointParallel"] : [];
   const filled = required.length > 0 && required.every((key) => answers[key]);
   const correct = id === "parallel-shapes" ? ["AB/BC", "AC/BD"].includes(answers["s1-intersect"]) && ["AB/BC", "AC/BD"].includes(answers["s1-perpendicular"]) && ["AB/CD", "AD/BC"].includes(answers["s1-parallel"]) && ["HM/PN", "HN/NM"].includes(answers["s2-intersect"]) && answers["s2-perpendicular"] === "HN/NM" && answers["s2-parallel"] === "HP/NM"
     : id === "parallel-point" ? answers.position === "outside-on-line"
@@ -41,8 +46,11 @@ export function ParallelBookPractice({ task }: { task: BookPracticeBlock }) {
         : id === "parallel-reason-1" ? answers.relation === "parallel" && answers.property === "perpendicular-third"
           : id === "parallel-reason-2" ? answers.relation === "parallel" && answers.property === "parallel-third"
             : id === "parallel-rebuild" ? answers.pair1 === "parallel" && answers.pair2 === "parallel"
-              : id === "parallel-perpendicular" ? answers.case1 === "perpendicular" && answers.case2 === "perpendicular"
-                : id === "parallel-parallel" ? answers.case1 === "parallel" && answers.case2 === "coincident-parallel" : false;
+              : id === "parallel-perpendicular" ? answers.case1 === "correct" && answers.case2 === "correct"
+                : id === "parallel-parallel" ? answers.case1 === "correct" && answers.case2 === "correct"
+                  : id === "parallel-lab-pair" ? answers.labPerp === "correct" && answers.labParallel === "correct"
+                    : id === "parallel-lab-point" ? answers.pointPerp === "correct"
+                      : id === "parallel-lab-parallel-point" ? answers.pointParallel === "correct" : false;
 
   const title = id === "parallel-shapes" ? "مستقيما الشكلين في ص 19"
     : id === "parallel-point" ? "المستقيم (d) والنقطتان A وB"
@@ -51,13 +59,9 @@ export function ParallelBookPractice({ task }: { task: BookPracticeBlock }) {
         : id.startsWith("parallel-reason") ? "استدلال من الشكل الهندسي"
           : id === "parallel-rebuild" ? "إعادة بناء العلاقات بين المستقيمات"
             : id === "parallel-perpendicular" ? "ارسم عمودًا من النقطة A على (d) في الحالتين"
-              : "ارسم موازيًا من النقطة A إلى (d) في الحالتين";
-  const constructionOptions = (caseNo: number): readonly Option[] => id === "parallel-perpendicular"
-    ? [["perpendicular", "عمود صحيح"], ["parallel", "موازٍ"], ["other", "مائل غير عمودي"]]
-    : caseNo === 1
-      ? [["parallel", "موازٍ من A خارج (d)"], ["perpendicular", "عمودي"], ["other", "خط مائل"]]
-      : [["coincident-parallel", "منطبق على (d) عند A"], ["parallel", "موازٍ منفصل عن (d)"], ["perpendicular", "عمودي"]];
-
+              : id === "parallel-parallel" ? "ارسم موازيًا من النقطة A إلى (d) في الحالتين"
+                : id === "parallel-lab-pair" ? "إنشاء عمود وموازٍ على المستقيم (d)"
+                  : id === "parallel-lab-point" ? "إنشاء عمود يمر بالنقطة A" : "إنشاء موازٍ يمر بالنقطة A";
   return <div className="mt-4 rounded-xl border border-brand/20 bg-white p-4" data-testid={`parallel-practice-${id}`}>
     <h3 className="mb-3 font-bold text-brand">{title}</h3>
     {id === "parallel-shapes" ? <p className="mb-4 rounded-lg border border-ink/10 bg-paper/30 p-3">ارجع إلى الشكلين الأصليين أعلاه في انطلاقة ص 19؛ اختر زوجًا من كل شكل لكل علاقة مطلوبة.</p> : <figure className="mb-4 overflow-x-auto rounded-lg border border-ink/10 bg-paper/30 p-2">
@@ -80,7 +84,10 @@ export function ParallelBookPractice({ task }: { task: BookPracticeBlock }) {
     {id === "parallel-relations" && <div className="grid gap-2 sm:grid-cols-2">{RELATIONS.map((relation)=><label key={relation} className="flex min-h-11 items-center gap-2 rounded-lg border p-2"><input type="checkbox" checked={(answers.relations??"").split("|").includes(relation)} onChange={(e)=>{const selected=new Set((answers.relations??"").split("|").filter(Boolean));e.target.checked?selected.add(relation):selected.delete(relation);set("relations",[...selected].join("|"));}}/><span dir="ltr">{relation}</span></label>)}</div>}
     {(id === "parallel-reason-1" || id === "parallel-reason-2") && <div className="grid gap-4 sm:grid-cols-2">{REASON_GROUPS.map(([key,label,opts])=><fieldset key={key}><legend className="mb-2 font-semibold">{label}</legend><div className="flex flex-wrap gap-2">{opts.map(([v,l])=><Choice key={v} value={v} label={l} selected={answers[key]===v} onClick={()=>set(key,v)}/>)}</div></fieldset>)}</div>}
     {id === "parallel-rebuild" && <div className="grid gap-4 sm:grid-cols-2">{REBUILD_GROUPS.map(([key,label,opts])=><fieldset key={key}><legend className="mb-2 font-semibold">{label}</legend><div className="flex flex-wrap gap-2">{opts.map(([v,l])=><Choice key={v} value={v} label={l} selected={answers[key]===v} onClick={()=>set(key,v)}/>)}</div></fieldset>)}</div>}
-    {(id === "parallel-perpendicular" || id === "parallel-parallel") && <div className="grid gap-4 sm:grid-cols-2">{[1,2].map((n)=><fieldset key={n}><legend className="mb-2 font-semibold">الحالة {n === 1 ? "الأولى" : "الثانية"}</legend><div className="flex flex-wrap gap-2">{constructionOptions(n).map(([v,l])=><Choice key={v} value={v} label={l} selected={answers[`case${n}`]===v} onClick={()=>set(`case${n}`,v)}/>)}</div></fieldset>)}</div>}
+    {(id === "parallel-perpendicular" || id === "parallel-parallel") && <div className="grid gap-4 sm:grid-cols-2">{[1,2].map((n)=><fieldset key={n} className="rounded-lg border border-ink/10 p-3"><legend className="mb-2 font-semibold">الحالة {n === 1 ? "الأولى" : "الثانية"}</legend><InteractiveLineConstruction key={`${id}-${n}-${attempt}`} kind={id === "parallel-perpendicular" ? "perpendicular" : "parallel"} caseNumber={n} onChange={(valid, points)=>set(`case${n}`, valid ? "correct" : points ? "drawn" : "")}/></fieldset>)}</div>}
+    {id === "parallel-lab-pair" && <div className="grid gap-4 sm:grid-cols-2"><InteractiveLineConstruction key={`lab-perp-${attempt}`} kind="perpendicular" caseNumber={2} requirePoint={false} onChange={(valid, points)=>set("labPerp", valid ? "correct" : points ? "drawn" : "")}/><InteractiveLineConstruction key={`lab-parallel-${attempt}`} kind="parallel" caseNumber={2} requirePoint={false} onChange={(valid, points)=>set("labParallel", valid ? "correct" : points ? "drawn" : "")}/></div>}
+    {id === "parallel-lab-point" && <InteractiveLineConstruction key={`lab-point-${attempt}`} kind="perpendicular" caseNumber={1} onChange={(valid, points)=>set("pointPerp", valid ? "correct" : points ? "drawn" : "")}/>}
+    {id === "parallel-lab-parallel-point" && <InteractiveLineConstruction key={`lab-parallel-point-${attempt}`} kind="parallel" caseNumber={1} onChange={(valid, points)=>set("pointParallel", valid ? "correct" : points ? "drawn" : "")}/> }
 
     <div className="mt-4 flex flex-wrap gap-2"><button type="button" className="btn btn-primary disabled:opacity-40" disabled={!filled} onClick={()=>{setChecked(true);setHint(false);}}>تحقّق من الإنشاء</button><button type="button" className="btn btn-ghost" onClick={reset}>إعادة المحاولة</button>{checked&&!correct&&<button type="button" className="btn btn-ghost" onClick={()=>setHint(true)}>أحتاج تلميحًا</button>}</div>
     {checked&&<p role="status" aria-live="polite" className={`mt-3 rounded-lg p-3 font-semibold ${correct?"bg-emerald-50 text-emerald-900":"bg-amber-50 text-amber-950"}`}>{correct?<>أحسنت! {task.explanation}</>:<>راجع العلاقة الهندسية أو موضع النقطة، ثم حاول ثانية.{hint&&<span className="block">تلميح: {task.hint}</span>}</>}</p>}
