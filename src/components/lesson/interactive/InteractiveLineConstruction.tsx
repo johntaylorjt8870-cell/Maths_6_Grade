@@ -72,7 +72,7 @@ export function InteractiveLineConstruction({
 
   return <div className="space-y-2" data-testid={`construction-${kind}-${caseNumber}`}>
     <p className="text-sm text-ink-soft">{requirePoint ? `${caseNumber === 1 ? "النقطة A خارج (d)" : "النقطة A على (d)"}. ارسم مستقيمًا يمر بها` : "ارسم المستقيم المطلوب بالنسبة إلى (d)"}. انقر نقطتين على الرسم لإنشاء المستقيم، ثم تحقق من العلاقة الهندسية.</p>
-    <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} className="w-full max-w-[360px] touch-none cursor-crosshair rounded-lg border bg-white" role="application" aria-label={`رسم إنشاء ${kind === "perpendicular" ? "عمود" : "موازٍ"} من A، الحالة ${caseNumber}`} onClick={clickCanvas} style={{ direction: "ltr" }}>
+    <svg data-testid={`construction-canvas-${kind}-${caseNumber}-${requirePoint ? "through-point" : "free"}`} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} className="w-full max-w-[360px] touch-none cursor-crosshair rounded-lg border bg-white" role="application" aria-label={`رسم إنشاء ${kind === "perpendicular" ? "عمود" : "موازٍ"} من A، الحالة ${caseNumber}`} onClick={clickCanvas} style={{ direction: "ltr" }}>
       <line x1={BASE[0].x} y1={BASE[0].y} x2={BASE[1].x} y2={BASE[1].y} stroke="#334155" strokeWidth="3" />
       <text x="224" y="92" fontSize="14">(d)</text>
       {points.length === 2 && <line x1={points[0].x} y1={points[0].y} x2={points[1].x} y2={points[1].y} stroke={isCorrect ? "#16834a" : "#c2413b"} strokeWidth="3" />}

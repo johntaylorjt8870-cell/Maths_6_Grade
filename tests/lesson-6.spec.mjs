@@ -25,8 +25,9 @@ async function choosePair(activity, sectionIndex, categoryIndex, label) {
   await activity.locator("section").nth(sectionIndex).locator("fieldset").nth(categoryIndex).getByRole("button", { name: label, exact: true }).click({ timeout: 4_000 });
 }
 
-async function drawLine(activity, start, end) {
-  const svg = activity.locator('svg[role="application"]');
+async function drawLine(canvas, start, end) {
+  const svg = canvas.locator('[data-testid^="construction-canvas-"]');
+  await expect(svg).toHaveCount(1, { timeout: 4_000 });
   const box = await svg.boundingBox();
   for (const [x, y] of [start, end]) await svg.click({ position: { x: (x / 280) * box.width, y: (y / 150) * box.height } });
 }
@@ -85,20 +86,22 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
         await drawLine(labPair.getByTestId("construction-perpendicular-2"), [130, 12], [130, 140]);
         await drawLine(labPair.getByTestId("construction-parallel-2"), [70, 100], [210, 100]);
       });
-    const labPoint = page.getByTestId("parallel-practice-parallel-lab-point");
-    await assertFeedbackCycle(labPoint,
+    const labPoint = page.getByTestId("parallel-practice-parallel-lab-point").getByTestId("construction-perpendicular-1");
+    await assertFeedbackCycle(page.getByTestId("parallel-practice-parallel-lab-point"),
       async () => drawLine(labPoint, [70, 28], [200, 28]),
       async () => drawLine(labPoint, [130, 12], [130, 105]));
 
     await goToStage(page, 6, "learn", width);
-    const methodPerp = page.getByTestId("parallel-practice-parallel-lab-point");
-    await assertFeedbackCycle(methodPerp,
-      async () => drawLine(methodPerp, [70, 28], [200, 28]),
-      async () => drawLine(methodPerp, [130, 12], [130, 105]));
-    const methodParallel = page.getByTestId("parallel-practice-parallel-lab-parallel-point");
-    await assertFeedbackCycle(methodParallel,
-      async () => drawLine(methodParallel, [130, 12], [130, 140]),
-      async () => drawLine(methodParallel, [70, 28], [200, 28]));
+    const methodPerpActivity = page.getByTestId("parallel-practice-parallel-lab-point");
+    const methodPerpCanvas = methodPerpActivity.getByTestId("construction-perpendicular-1");
+    await assertFeedbackCycle(methodPerpActivity,
+      async () => drawLine(methodPerpCanvas, [70, 28], [200, 28]),
+      async () => drawLine(methodPerpCanvas, [130, 12], [130, 105]));
+    const methodParallelActivity = page.getByTestId("parallel-practice-parallel-lab-parallel-point");
+    const methodParallelCanvas = methodParallelActivity.getByTestId("construction-parallel-1");
+    await assertFeedbackCycle(methodParallelActivity,
+      async () => drawLine(methodParallelCanvas, [130, 12], [130, 140]),
+      async () => drawLine(methodParallelCanvas, [70, 28], [200, 28]));
 
     await goToStage(page, 6, "check", width);
     const relations = page.getByTestId("parallel-practice-parallel-relations");
