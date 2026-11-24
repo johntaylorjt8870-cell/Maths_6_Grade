@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("absmn: اختيار كل نقطة وتسجيلها، منع الناقص، الخطأ والتلميح والإعادة والنجاح", async ({ page }) => {
-  const width = 390;
+  const width = 360;
   const progress = (message) => console.log(`[absmn ${width}px] ${message}`);
   const consoleErrors = [], pageErrors = [];
   page.on("console", (message) => { if (message.type() === "error") consoleErrors.push(message.text()); });
@@ -19,10 +19,13 @@ test("absmn: اختيار كل نقطة وتسجيلها، منع الناقص،
       const slot = activity.getByTestId(`absmn-slot-${x}`);
       await expect(label).toBeVisible({ timeout: 4_000 });
       await label.click({ timeout: 4_000 });
+      await expect(label).toHaveAttribute("aria-pressed", "true", { timeout: 4_000 });
       progress(`تم تحديد اسم ${name}`);
       await expect(slot).toBeEnabled({ timeout: 4_000 });
+      await expect(slot).toHaveAccessibleName(`ضع ${name} عند الموضع ${x}`, { timeout: 4_000 });
       await slot.click({ timeout: 4_000 });
       await expect(activity.getByRole("status")).toContainText(`تم وضع النقطة ${name} عند الموضع ${x}`, { timeout: 4_000 });
+      await expect(label).toContainText("✓", { timeout: 4_000 });
       progress(`تم تسجيل ${name} في ${x}، والموضع ظاهر على SVG`);
     });
   }
