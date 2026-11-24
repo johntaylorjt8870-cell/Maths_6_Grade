@@ -9,6 +9,7 @@ on:
       - "src/components/lesson/interactive/BookPracticeActivity.tsx"
       - "src/content/types.ts"
       - "tests/lesson-5.spec.mjs"
+      - "tests/lesson-5-absmn.spec.mjs"
       - "playwright.config.ts"
       - "package.json"
       - "package-lock.json"
@@ -31,13 +32,18 @@ jobs:
       - name: Run browser suite
         shell: bash
         run: |
-          set +e
-          npm run test:e2e 2>&1 | tee /tmp/lesson5-playwright.log
-          result=${PIPESTATUS[0]}
-          if [ "$result" -ne 0 ]; then
-            grep -E '\[lesson5|Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error' /tmp/lesson5-playwright.log | tail -n 20 | while IFS= read -r line; do echo "::error::$line"; done
-          fi
-          exit "$result"
+          run_suite() {
+            name="$1"; shift
+            set +e
+            "$@" 2>&1 | tee "/tmp/${name}.log"
+            result=${PIPESTATUS[0]}
+            if [ "$result" -ne 0 ]; then
+              grep -E '\[absmn|\[lesson5|Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error' "/tmp/${name}.log" | tail -n 30 | while IFS= read -r line; do echo "::error::$line"; done
+              return "$result"
+            fi
+          }
+          run_suite absmn npm run test:e2e -- tests/lesson-5-absmn.spec.mjs || exit $?
+          run_suite lesson5 npm run test:e2e || exit $?
       - if: always()
         uses: actions/upload-artifact@v4
         with:

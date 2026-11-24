@@ -8,7 +8,7 @@ async function clickTarget(svg,p,v={x:0,y:0,w:560,h:280}){const b=await svg.boun
 async function pressPoint(activity,n){await activity.getByRole("button",{name:`النقطة ${n}`}).click()}
 async function failedTry(a){await a.getByRole("button",{name:"تحقّق من الإنشاء"}).click();await expect(a.getByRole("status")).toContainText("راجع");await a.getByRole("button",{name:"أحتاج تلميحًا"}).click();await expect(a.getByRole("status")).toContainText("تلميح:");await a.getByRole("button",{name:"إعادة المحاولة"}).click();await expect(a.getByRole("status")).toHaveCount(0)}
 async function passedTry(a){await a.getByRole("button",{name:"تحقّق من الإنشاء"}).click();await expect(a.getByRole("status")).toContainText("أحسنت!");await a.getByRole("button",{name:"إعادة المحاولة"}).click();await expect(a.getByRole("status")).toHaveCount(0)}
-async function placeLinePoints(a,c){for(const[n,x]of [["B",c.B],["S",c.S],["M",c.M],["N",c.N]]){await a.getByRole("button",{name:new RegExp(`^${n}(?: ✓)?$`)}).click();await a.getByRole("button",{name:`موضع ${x}`}).click()}}
+async function placeLinePoints(a,c,mark=()=>{}){for(const[n,x]of [["B",c.B],["S",c.S],["M",c.M],["N",c.N]]){await test.step(`absmn: اختيار ${n} عند ${x}`,async()=>{await a.locator(`[data-point-label="${n}"]`).click({timeout:4000});mark(`اخترت النقطة ${n}`);await a.getByTestId(`absmn-slot-${x}`).click({timeout:4000});await expect(a.getByRole("status")).toContainText(`تم وضع النقطة ${n} عند الموضع ${x}`);mark(`تأكد تسجيل ${n} في ${x}`)})}}
 async function rays(a,red,blue){await a.getByRole("button",{name:/\[B[AC]\) الأحمر/}).click();await pressPoint(a,red[0]);await pressPoint(a,red[1]);await a.getByRole("button",{name:/\[AB\) الأزرق/}).click();await pressPoint(a,blue[0]);await pressPoint(a,blue[1])}
 async function labelIntersections(a,targets,v){const svg=a.locator("svg");for(const name of Object.keys(targets)){await a.getByRole("button",{name:new RegExp(`^${name}(?: ✓)?$`)}).click();await clickTarget(svg,targets[name],v)}}
 
@@ -21,7 +21,7 @@ test.describe("درس 5: كل التفاعلات الهندسية والفروع
   for(const[i,v]of [[0,"تقع على"],[1,"تقع على"],[2,"تقع على"]])await rspm.locator("fieldset").nth(i).getByRole("button",{name:v,exact:true}).click();await failedTry(rspm);
   for(const[i,v]of [[0,"تقع على"],[1,"تقع على"],[2,"لا تقع على"]])await rspm.locator("fieldset").nth(i).getByRole("button",{name:v,exact:true}).click();await passedTry(rspm);mark("rspm passed; absmn");
   // 2: تحريك B,S,M,N والتحقق من القطعة والمستقيم ونصف المستقيم.
-  const absmn=page.getByTestId("geometry-absmn");await expect(absmn.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await placeLinePoints(absmn,{B:310,S:391,M:175,N:391});await failedTry(absmn);await placeLinePoints(absmn,{B:310,S:283,M:175,N:391});await passedTry(absmn);mark("absmn passed");
+  const absmn=page.getByTestId("geometry-absmn");await expect(absmn.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await placeLinePoints(absmn,{B:310,S:364,M:94,N:364},mark);await failedTry(absmn);await placeLinePoints(absmn,{B:310,S:256,M:94,N:364},mark);await passedTry(absmn);mark("absmn passed");
 
   mark("check rays/intersection/oral");await page.goto(`${base}#check`);
   // 3: إنشاء نصفي المستقيمين من المبدأ ونقطة المرور باللون الصحيح.
