@@ -43,9 +43,13 @@ jobs:
               return "$result"
             fi
           }
-          run_suite abc-rays npm run test:e2e -- tests/lesson-5-abc-rays.spec.mjs || exit $?
-          run_suite absmn npm run test:e2e -- tests/lesson-5-absmn.spec.mjs || exit $?
-          run_suite all-lessons npm run test:e2e || exit $?
+          overall=0
+          for spec in tests/lesson-1-1.spec.mjs tests/lesson-1-2.spec.mjs tests/lesson-1-3.spec.mjs tests/lesson-1-4.spec.mjs tests/lesson-5-abc-rays.spec.mjs tests/lesson-5-absmn.spec.mjs tests/lesson-5.spec.mjs tests/lesson-6.spec.mjs; do
+            name="${spec##*/}"
+            name="${name%.spec.mjs}"
+            run_suite "$name" npm run test:e2e -- "$spec" || overall=1
+          done
+          exit "$overall"
       - if: always()
         uses: actions/upload-artifact@v4
         with:
