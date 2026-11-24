@@ -14,8 +14,18 @@ export async function assertNoHorizontalOverflow(page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
 }
 
-export async function assertNotebookAndPrint(page, lessonTitle) {
-  await page.goto(`${lessonBase(lessonTitle.number)}#notebook`);
+const stageNames = { taheya: "التهيئة", discovery: "اكتشاف المفهوم", learn: "الشرح المفصل", lab: "النشاط / المختبر", check: "تحقق من فهمك", practice: "التطبيق", quiz: "اختبار الدرس", summary: "الملخص", notebook: "دفتر الطالب" };
+
+export async function goToStage(page, lessonNumber, stage, width) {
+  await page.goto(lessonBase(lessonNumber));
+  await expect(page.locator(".lesson-steps-root")).toBeVisible();
+  const nav = width >= 1024 ? page.locator(".lesson-steps-layout aside") : page.locator(".lesson-steps-chrome").first();
+  await nav.getByRole("button", { name: new RegExp(stageNames[stage]) }).click();
+  await expect(page.locator(`#stage-panel-${stage}`)).toBeVisible();
+}
+
+export async function assertNotebookAndPrint(page, lessonTitle, width) {
+  await goToStage(page, lessonTitle.number, "notebook", width);
   const notebook = page.locator("section#notebook.notebook-print");
   await expect(notebook).toBeVisible();
   await expect(notebook.locator("p").filter({ hasText: "دفتر الطالب" }).first()).toBeVisible();

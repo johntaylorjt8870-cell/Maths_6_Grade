@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { assertNoHorizontalOverflow, assertNotebookAndPrint, lessonBase, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
+import { assertNoHorizontalOverflow, assertNotebookAndPrint, goToStage, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
 
 test("الدرس 3 — كتابة العدد: تصنيف جميع صيغ 320200002 مع الخطأ والتلميح والإعادة", async ({ page }) => {
   const errors = await watchErrors(page);
@@ -10,7 +10,7 @@ test("الدرس 3 — كتابة العدد: تصنيف جميع صيغ 3202000
   ];
   for (const width of viewports) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto(`${lessonBase(3)}#check`);
+    await goToStage(page, 3, "check", width);
     const activity = page.locator("#check .book-practice").first();
     const check = activity.getByRole("button", { name: "تحقّق من إجابتي" });
     await expect(check).toBeDisabled();
@@ -29,7 +29,7 @@ test("الدرس 3 — كتابة العدد: تصنيف جميع صيغ 3202000
     await activity.getByRole("button", { name: "تحقّق من إجابتي" }).click();
     await expect(activity.getByRole("status")).toContainText("أحسنت!");
     await assertNoHorizontalOverflow(page);
-    await assertNotebookAndPrint(page, { number: 3, name: "الأعداد الطبيعية (2)" });
+    await assertNotebookAndPrint(page, { number: 3, name: "الأعداد الطبيعية (2)" }, width);
     await assertNoHorizontalOverflow(page);
   }
   expect(errors.console).toEqual([]);

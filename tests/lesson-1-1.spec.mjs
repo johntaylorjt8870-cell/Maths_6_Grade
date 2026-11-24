@@ -1,11 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { assertNoHorizontalOverflow, assertNotebookAndPrint, lessonBase, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
+import { assertNoHorizontalOverflow, assertNotebookAndPrint, goToStage, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
 
 test("الدرس 1 — الرسوم البيانية: إجابة خاطئة، تلميح، إعادة ومحاولة صحيحة على المقاسات الثلاثة", async ({ page }) => {
   const errors = await watchErrors(page);
   for (const width of viewports) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto(`${lessonBase(1)}#quiz`);
+    await goToStage(page, 1, "quiz", width);
     const firstQuestion = page.locator("#quiz li").first();
     await expect(firstQuestion).toBeVisible();
     await firstQuestion.locator("label").nth(0).click();
@@ -18,7 +18,7 @@ test("الدرس 1 — الرسوم البيانية: إجابة خاطئة، ت
     await firstQuestion.getByRole("button", { name: "تحقّق من إجابتي" }).click();
     await expect(firstQuestion.getByRole("status")).toContainText("إجابتك صحيحة");
     await assertNoHorizontalOverflow(page);
-    await assertNotebookAndPrint(page, { number: 1, name: "التمثيل البياني بالخطوط" });
+    await assertNotebookAndPrint(page, { number: 1, name: "التمثيل البياني بالخطوط" }, width);
     await assertNoHorizontalOverflow(page);
   }
   expect(errors.console).toEqual([]);

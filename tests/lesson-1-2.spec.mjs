@@ -1,11 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { assertNoHorizontalOverflow, assertNotebookAndPrint, lessonBase, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
+import { assertNoHorizontalOverflow, assertNotebookAndPrint, goToStage, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
 
 test("الدرس 2 — مستقيم الأعداد والتصنيف: الناقص والخطأ والتلميح والإعادة والصواب", async ({ page }) => {
   const errors = await watchErrors(page);
   for (const width of viewports) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto(`${lessonBase(2)}#discovery`);
+    await goToStage(page, 2, "discovery", width);
     const angles = page.getByTestId("natural-angle-count");
     const angleCheck = angles.getByRole("button", { name: "تحقّق من الإجابات" });
     await expect(angleCheck).toBeDisabled();
@@ -19,7 +19,7 @@ test("الدرس 2 — مستقيم الأعداد والتصنيف: الناق�
     await angleCheck.click();
     await expect(angles.getByRole("status")).toContainText("أحسنت!");
 
-    await page.goto(`${lessonBase(2)}#check`);
+    await goToStage(page, 2, "check", width);
     const lineActivity = page.locator("#check .book-practice").filter({ hasText: "مثّل الأعداد الطبيعية المحصورة بين 0 و15" }).first();
     const check = lineActivity.getByRole("button", { name: "تحقّق من إجابتي" });
     await expect(check).toBeDisabled();
@@ -36,7 +36,7 @@ test("الدرس 2 — مستقيم الأعداد والتصنيف: الناق�
     await lineActivity.getByRole("button", { name: "إعادة المحاولة" }).click();
     await expect(check).toBeDisabled();
     await assertNoHorizontalOverflow(page);
-    await assertNotebookAndPrint(page, { number: 2, name: "الأعداد الطبيعية (1)" });
+    await assertNotebookAndPrint(page, { number: 2, name: "الأعداد الطبيعية (1)" }, width);
     await assertNoHorizontalOverflow(page);
   }
   expect(errors.console).toEqual([]);

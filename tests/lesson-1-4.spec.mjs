@@ -1,11 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { assertNoHorizontalOverflow, assertNotebookAndPrint, lessonBase, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
+import { assertNoHorizontalOverflow, assertNotebookAndPrint, goToStage, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
 
 test("الدرس 4 — تقريب العدد 295992458 إلى أقرب مليون: إجابة خاطئة وصحيحة وإعادة", async ({ page }) => {
   const errors = await watchErrors(page);
   for (const width of viewports) {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto(`${lessonBase(4)}#check`);
+    await goToStage(page, 4, "check", width);
     const activity = page.locator("#check .book-practice").first();
     const answer = activity.getByLabel("إلى أقرب مليون");
     const check = activity.getByRole("button", { name: "تحقّق من إجابتي" });
@@ -22,7 +22,7 @@ test("الدرس 4 — تقريب العدد 295992458 إلى أقرب مليو�
     await check.click();
     await expect(activity.getByRole("status")).toContainText("أحسنت!");
     await assertNoHorizontalOverflow(page);
-    await assertNotebookAndPrint(page, { number: 4, name: "الأعداد الطبيعية (3)" });
+    await assertNotebookAndPrint(page, { number: 4, name: "الأعداد الطبيعية (3)" }, width);
     await assertNoHorizontalOverflow(page);
   }
   expect(errors.console).toEqual([]);

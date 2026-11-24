@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { goToStage } from "./lesson-e2e-helpers.mjs";
 
-const base = "/Maths_6_Grade/lessons/lesson-1-6/";
 const widths = [1440, 390, 360];
 
 async function assertFeedbackCycle(activity, makeWrong, makeRight) {
@@ -38,7 +38,7 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
     page.on("console", (msg) => { if (msg.type() === "error") consoleErrors.push(msg.text()); });
     page.on("pageerror", (error) => pageErrors.push(error.message));
 
-    await page.goto(`${base}#discovery`);
+    await goToStage(page, 6, "discovery", width);
     const shapes = page.getByTestId("parallel-practice-parallel-shapes");
     await assertFeedbackCycle(shapes,
       async () => {
@@ -74,7 +74,7 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
         await mcq.getByRole("group", { name: "ب — المستقيمان المرسومان" }).getByRole("button", { name: "متقاطعان" }).click({ timeout: 4_000 });
       });
 
-    await page.goto(`${base}#lab`);
+    await goToStage(page, 6, "lab", width);
     const labPair = page.getByTestId("parallel-practice-parallel-lab-pair");
     await assertFeedbackCycle(labPair,
       async () => {
@@ -90,7 +90,7 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
       async () => drawLine(labPoint, [70, 28], [200, 28]),
       async () => drawLine(labPoint, [130, 12], [130, 105]));
 
-    await page.goto(`${base}#learn`);
+    await goToStage(page, 6, "learn", width);
     const methodPerp = page.getByTestId("parallel-practice-parallel-lab-point");
     await assertFeedbackCycle(methodPerp,
       async () => drawLine(methodPerp, [70, 28], [200, 28]),
@@ -100,7 +100,7 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
       async () => drawLine(methodParallel, [130, 12], [130, 140]),
       async () => drawLine(methodParallel, [70, 28], [200, 28]));
 
-    await page.goto(`${base}#check`);
+    await goToStage(page, 6, "check", width);
     const relations = page.getByTestId("parallel-practice-parallel-relations");
     await expect(relations.getByRole("button", { name: "تحقّق من الإنشاء" })).toBeDisabled();
     for (const r of ["(d) ⟂ (L)", "(d) ⟂ (M)", "(T) ⟂ (L)", "(T) ⟂ (M)", "(L) ∥ (M)"]) await relations.getByLabel(r).check({ timeout: 4_000 });
@@ -113,7 +113,7 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
     await relations.getByRole("button", { name: "تحقّق من الإنشاء" }).click({ timeout: 4_000 });
     await expect(relations.getByRole("status")).toContainText("أحسنت!");
 
-    await page.goto(`${base}#practice`);
+    await goToStage(page, 6, "practice", width);
     const reason1 = page.getByTestId("parallel-practice-parallel-reason-1");
     await assertFeedbackCycle(reason1,
       async () => {
@@ -168,7 +168,7 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
         await drawLine(parallel.getByTestId("construction-parallel-2"), [24, 100], [256, 100]);
       });
 
-    await page.goto(`${base}#notebook`);
+    await goToStage(page, 6, "notebook", width);
     const notebook = page.locator("section#notebook.notebook-print");
     await expect(notebook).toBeVisible({ timeout: 4_000 });
     await expect(notebook.locator("p").filter({ hasText: "دفتر الطالب" }).first()).toBeVisible({ timeout: 4_000 });
