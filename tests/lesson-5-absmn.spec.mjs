@@ -8,6 +8,18 @@ test("absmn: اختيار كل نقطة وتسجيلها، منع الناقص،
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.setViewportSize({ width, height: 900 });
   await page.goto("/Maths_6_Grade/lessons/lesson-1-5/#discovery");
+  // Reproduce the full-flow state immediately before AB/S/M/N: finish and reset the preceding visual table task.
+  const preceding = page.getByTestId("geometry-rspm");
+  for (const [index, answer] of [[0, "تقع على"], [1, "تقع على"], [2, "تقع على"]]) await preceding.locator("fieldset").nth(index).getByRole("button", { name: answer, exact: true }).click({ timeout: 4_000 });
+  await preceding.getByRole("button", { name: "تحقّق من الإنشاء" }).click({ timeout: 4_000 });
+  await preceding.getByRole("button", { name: "أحتاج تلميحًا" }).click({ timeout: 4_000 });
+  await preceding.getByRole("button", { name: "إعادة المحاولة" }).click({ timeout: 4_000 });
+  for (const [index, answer] of [[0, "تقع على"], [1, "تقع على"], [2, "لا تقع على"]]) await preceding.locator("fieldset").nth(index).getByRole("button", { name: answer, exact: true }).click({ timeout: 4_000 });
+  await preceding.getByRole("button", { name: "تحقّق من الإنشاء" }).click({ timeout: 4_000 });
+  await expect(preceding.getByRole("status")).toContainText("أحسنت!");
+  await preceding.getByRole("button", { name: "إعادة المحاولة" }).click({ timeout: 4_000 });
+  progress("تم استعادة حالة المتصفح بعد النشاط السابق مباشرةً");
+
   const activity = page.getByTestId("geometry-absmn");
   const check = activity.getByRole("button", { name: "تحقّق من الإنشاء" });
   await expect(activity).toBeVisible();
