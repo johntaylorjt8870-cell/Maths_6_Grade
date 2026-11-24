@@ -9,14 +9,14 @@ async function assertFeedbackCycle(activity, makeWrong, makeRight) {
   await makeWrong();
   await expect(check).toBeEnabled({ timeout: 4_000 });
   await check.click({ timeout: 4_000 });
-  await expect(activity.getByRole("status")).toContainText("راجع", { timeout: 4_000 });
+  await expect(activity.getByRole("status").last()).toContainText("راجع", { timeout: 4_000 });
   await activity.getByRole("button", { name: "أحتاج تلميحًا" }).click({ timeout: 4_000 });
-  await expect(activity.getByRole("status")).toContainText("تلميح:", { timeout: 4_000 });
+  await expect(activity.getByRole("status").last()).toContainText("تلميح:", { timeout: 4_000 });
   await activity.getByRole("button", { name: "إعادة المحاولة" }).click({ timeout: 4_000 });
   await expect(check).toBeDisabled({ timeout: 4_000 });
   await makeRight();
   await check.click({ timeout: 4_000 });
-  await expect(activity.getByRole("status")).toContainText("أحسنت!", { timeout: 4_000 });
+  await expect(activity.getByRole("status").last()).toContainText("أحسنت!", { timeout: 4_000 });
   await activity.getByRole("button", { name: "إعادة المحاولة" }).click({ timeout: 4_000 });
   await expect(check).toBeDisabled({ timeout: 4_000 });
 }
