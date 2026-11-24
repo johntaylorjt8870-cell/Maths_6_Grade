@@ -9,7 +9,7 @@ async function pressPoint(activity,n){await activity.getByRole("button",{name:`�
 async function failedTry(a){await a.getByRole("button",{name:"تحقّق من الإنشاء"}).click();await expect(a.getByRole("status")).toContainText("راجع");await a.getByRole("button",{name:"أحتاج تلميحًا"}).click();await expect(a.getByRole("status")).toContainText("تلميح:");await a.getByRole("button",{name:"إعادة المحاولة"}).click();await expect(a.getByRole("status")).toHaveCount(0)}
 async function passedTry(a){await a.getByRole("button",{name:"تحقّق من الإنشاء"}).click();await expect(a.getByRole("status")).toContainText("أحسنت!");await a.getByRole("button",{name:"إعادة المحاولة"}).click();await expect(a.getByRole("status")).toHaveCount(0)}
 async function placeLinePoints(a,c,mark=()=>{}){for(const[n,x]of [["B",c.B],["S",c.S],["M",c.M],["N",c.N]]){await test.step(`absmn: اختيار ${n} عند ${x}`,async()=>{const label=a.locator(`[data-point-label="${n}"]`);await label.click({timeout:4000});await expect(label).toHaveAttribute("aria-pressed","true",{timeout:4000});mark(`اخترت النقطة ${n}`);const slot=a.getByTestId(`absmn-slot-${x}`);await expect(slot).toBeEnabled({timeout:4000});await expect(slot).toHaveAccessibleName(`ضع ${n} عند الموضع ${x}`,{timeout:4000});await slot.click({timeout:4000});await expect(a.getByRole("status")).toContainText(`تم وضع النقطة ${n} عند الموضع ${x}`,{timeout:4000});await expect(label).toContainText("✓",{timeout:4000});mark(`تأكد تسجيل ${n} في ${x}`)})}}
-async function rays(a,red,blue){await a.getByRole("button",{name:/\[B[AC]\) الأحمر/}).click();await pressPoint(a,red[0]);await pressPoint(a,red[1]);await a.getByRole("button",{name:/\[AB\) الأزرق/}).click();await pressPoint(a,blue[0]);await pressPoint(a,blue[1])}
+async function rays(a,red,blue,redName,blueName){await a.getByRole("button",{name:redName,exact:true}).click();await pressPoint(a,red[0]);await pressPoint(a,red[1]);await a.getByRole("button",{name:blueName,exact:true}).click();await pressPoint(a,blue[0]);await pressPoint(a,blue[1])}
 async function labelIntersections(a,targets,v){const svg=a.locator("svg");for(const name of Object.keys(targets)){await a.getByRole("button",{name:new RegExp(`^${name}(?: ✓)?$`)}).click();await clickTarget(svg,targets[name],v)}}
 
 test.describe("درس 5: كل التفاعلات الهندسية والفروع",()=>{
@@ -25,7 +25,7 @@ test.describe("درس 5: كل التفاعلات الهندسية والفروع
 
   mark("check rays/intersection/oral");await page.goto(`${base}#check`);
   // 3: إنشاء نصفي المستقيمين من المبدأ ونقطة المرور باللون الصحيح.
-  const checkRays=page.getByTestId("geometry-check-rays");await expect(checkRays).toBeVisible();await expect(checkRays.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await rays(checkRays,["A","B"],["A","B"]);await failedTry(checkRays);await rays(checkRays,["B","A"],["A","B"]);await passedTry(checkRays);mark("check rays passed");
+  const checkRays=page.getByTestId("geometry-check-rays");await expect(checkRays).toBeVisible();await expect(checkRays.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await rays(checkRays,["A","B"],["A","B"],"[BA) الأحمر","[AB) الأزرق");await failedTry(checkRays);await rays(checkRays,["B","A"],["A","B"],"[BA) الأحمر","[AB) الأزرق");await passedTry(checkRays);mark("check rays passed");
   // 4: وضع Q خارج d، رسم (AQ),(BQ)، واختيار نقطة التقاطع الصحيحة.
   const cross=page.getByTestId("geometry-check-intersection");await expect(cross.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();const qAbove=cross.getByRole("button",{name:"ضع Q فوق (d)"});await qAbove.focus();await page.keyboard.press("Enter");await cross.getByRole("button",{name:"A",exact:true}).click();await failedTry(cross);await cross.getByRole("button",{name:"ضع Q تحت (d)"}).click();await cross.getByRole("button",{name:"Q",exact:true}).click();await passedTry(cross);mark("check intersection passed");
   // 5: التعبير الشفهي يظل إدخالًا مفتوحًا لأن له صيغًا صحيحة كثيرة.
@@ -33,7 +33,7 @@ test.describe("درس 5: كل التفاعلات الهندسية والفروع
 
   mark("practice rays/dlt/abrp");await page.goto(`${base}#practice`);
   // 6: ترتيب A,B,C ورسم [BC) بالأحمر و[BA) بالأزرق.
-  const abc=page.getByTestId("geometry-abc-rays");await expect(abc).toBeVisible();await expect(abc.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await rays(abc,["A","B"],["B","A"]);await failedTry(abc);await rays(abc,["B","C"],["B","A"]);await passedTry(abc);mark("abc rays passed");
+  const abc=page.getByTestId("geometry-abc-rays");await expect(abc).toBeVisible();await expect(abc.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await rays(abc,["A","B"],["B","A"],"[BC) الأحمر","[BA) الأزرق");await failedTry(abc);await rays(abc,["B","C"],["B","A"],"[BC) الأحمر","[BA) الأزرق");await passedTry(abc);mark("abc rays passed");
   // 7: مواضع تقاطعات d/L وL/T وd/T وتسميتها E,F,G.
   const d=page.getByTestId("geometry-dlt");await expect(d.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await labelIntersections(d,{E:dlt.F,F:dlt.E,G:dlt.G});await failedTry(d);await d.getByRole("button",{name:"E",exact:true}).click();await d.getByRole("button",{name:"موضع تقاطع محتمل"}).first().focus();await page.keyboard.press("Enter");await labelIntersections(d,{F:dlt.F,G:dlt.G});await passedTry(d);mark("dlt passed");
   // 8: تقاطعات (AB)/(RP)، (AR)/(BP)، (AP)/(BR) وتسميتها M,N,O.

@@ -10,6 +10,7 @@ on:
       - "src/content/types.ts"
       - "tests/lesson-5.spec.mjs"
       - "tests/lesson-5-absmn.spec.mjs"
+      - "tests/lesson-5-abc-rays.spec.mjs"
       - "playwright.config.ts"
       - "package.json"
       - "package-lock.json"
@@ -42,7 +43,7 @@ jobs:
               return "$result"
             fi
           }
-          run_suite absmn npm run test:e2e -- tests/lesson-5-absmn.spec.mjs || exit $?
+          run_suite abc-rays npm run test:e2e -- tests/lesson-5-abc-rays.spec.mjs || exit $?
           run_suite lesson5 npm run test:e2e || exit $?
       - if: always()
         uses: actions/upload-artifact@v4
