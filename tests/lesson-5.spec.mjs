@@ -14,30 +14,30 @@ async function labelIntersections(a,targets,v){const svg=a.locator("svg");for(co
 
 test.describe("درس 5: كل التفاعلات الهندسية والفروع",()=>{
  for(const width of widths)test(`تحقق كامل على viewport ${width}px`,async({page})=>{
-  await page.setViewportSize({width,height:900});const consoleErrors=[],pageErrors=[];page.on("console",m=>{if(m.type()==="error")consoleErrors.push(m.text())});page.on("pageerror",e=>pageErrors.push(e.message));
-  await page.goto(`${base}#discovery`);
+  await page.setViewportSize({width,height:900});const mark=(s)=>console.log(`[lesson5 ${width}] ${s}`);const consoleErrors=[],pageErrors=[];page.on("console",m=>{if(m.type()==="error")consoleErrors.push(m.text())});page.on("pageerror",e=>pageErrors.push(e.message));
+  mark("discovery rspm");await page.goto(`${base}#discovery`);
   // 1: P وR على المستقيم، M خارجه.
   const rspm=page.getByTestId("geometry-rspm");await expect(rspm).toBeVisible();await expect(rspm.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();
   for(const[i,v]of [[0,"تقع على"],[1,"تقع على"],[2,"تقع على"]])await rspm.locator("fieldset").nth(i).getByRole("button",{name:v,exact:true}).click();await failedTry(rspm);
-  for(const[i,v]of [[0,"تقع على"],[1,"تقع على"],[2,"لا تقع على"]])await rspm.locator("fieldset").nth(i).getByRole("button",{name:v,exact:true}).click();await passedTry(rspm);
+  for(const[i,v]of [[0,"تقع على"],[1,"تقع على"],[2,"لا تقع على"]])await rspm.locator("fieldset").nth(i).getByRole("button",{name:v,exact:true}).click();await passedTry(rspm);mark("rspm passed; absmn");
   // 2: تحريك B,S,M,N والتحقق من القطعة والمستقيم ونصف المستقيم.
-  const absmn=page.getByTestId("geometry-absmn");await expect(absmn.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await placeLinePoints(absmn,{B:310,S:391,M:175,N:391});await failedTry(absmn);await placeLinePoints(absmn,{B:310,S:283,M:175,N:391});await passedTry(absmn);
+  const absmn=page.getByTestId("geometry-absmn");await expect(absmn.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await placeLinePoints(absmn,{B:310,S:391,M:175,N:391});await failedTry(absmn);await placeLinePoints(absmn,{B:310,S:283,M:175,N:391});await passedTry(absmn);mark("absmn passed");
 
-  await page.goto(`${base}#check`);
+  mark("check rays/intersection/oral");await page.goto(`${base}#check`);
   // 3: إنشاء نصفي المستقيمين من المبدأ ونقطة المرور باللون الصحيح.
-  const checkRays=page.getByTestId("geometry-check-rays");await expect(checkRays).toBeVisible();await expect(checkRays.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await rays(checkRays,["A","B"],["A","B"]);await failedTry(checkRays);await rays(checkRays,["B","A"],["A","B"]);await passedTry(checkRays);
+  const checkRays=page.getByTestId("geometry-check-rays");await expect(checkRays).toBeVisible();await expect(checkRays.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await rays(checkRays,["A","B"],["A","B"]);await failedTry(checkRays);await rays(checkRays,["B","A"],["A","B"]);await passedTry(checkRays);mark("check rays passed");
   // 4: وضع Q خارج d، رسم (AQ),(BQ)، واختيار نقطة التقاطع الصحيحة.
-  const cross=page.getByTestId("geometry-check-intersection");await expect(cross.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();const qAbove=cross.getByRole("button",{name:"ضع Q فوق (d)"});await qAbove.focus();await page.keyboard.press("Enter");await cross.getByRole("button",{name:"A",exact:true}).click();await failedTry(cross);await cross.getByRole("button",{name:"ضع Q تحت (d)"}).click();await cross.getByRole("button",{name:"Q",exact:true}).click();await passedTry(cross);
+  const cross=page.getByTestId("geometry-check-intersection");await expect(cross.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();const qAbove=cross.getByRole("button",{name:"ضع Q فوق (d)"});await qAbove.focus();await page.keyboard.press("Enter");await cross.getByRole("button",{name:"A",exact:true}).click();await failedTry(cross);await cross.getByRole("button",{name:"ضع Q تحت (d)"}).click();await cross.getByRole("button",{name:"Q",exact:true}).click();await passedTry(cross);mark("check intersection passed");
   // 5: التعبير الشفهي يظل إدخالًا مفتوحًا لأن له صيغًا صحيحة كثيرة.
-  const oral=page.locator(".book-practice").filter({hasText:"تعبير شفهي"});await expect(oral).toHaveCount(1);const inputs=oral.locator("input");await expect(oral.getByRole("button",{name:/تحقّق من إجابتي/})).toBeDisabled();const answers=["ليس له بداية وليس له نهاية، غير محدود","له بداية وليس له نهاية، غير محدود","لها بداية ولها نهاية، محدود"];for(let i=0;i<3;i++)await inputs.nth(i).fill(answers[i]);await oral.getByRole("button",{name:/تحقّق من إجابتي/}).click();await expect(oral.getByRole("status")).toContainText("أكملت تسجيل الفروع المفتوحة");await oral.getByRole("button",{name:"إعادة المحاولة"}).click();for(let i=0;i<3;i++)await expect(inputs.nth(i)).toHaveValue("");
+  const oral=page.locator(".book-practice").filter({hasText:"تعبير شفهي"});await expect(oral).toHaveCount(1);const inputs=oral.locator("input");await expect(oral.getByRole("button",{name:/تحقّق من إجابتي/})).toBeDisabled();const answers=["ليس له بداية وليس له نهاية، غير محدود","له بداية وليس له نهاية، غير محدود","لها بداية ولها نهاية، محدود"];for(let i=0;i<3;i++)await inputs.nth(i).fill(answers[i]);await oral.getByRole("button",{name:/تحقّق من إجابتي/}).click();await expect(oral.getByRole("status")).toContainText("أكملت تسجيل الفروع المفتوحة");await oral.getByRole("button",{name:"إعادة المحاولة"}).click();for(let i=0;i<3;i++)await expect(inputs.nth(i)).toHaveValue("");mark("oral passed");
 
-  await page.goto(`${base}#practice`);
+  mark("practice rays/dlt/abrp");await page.goto(`${base}#practice`);
   // 6: ترتيب A,B,C ورسم [BC) بالأحمر و[BA) بالأزرق.
-  const abc=page.getByTestId("geometry-abc-rays");await expect(abc).toBeVisible();await expect(abc.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await rays(abc,["A","B"],["B","A"]);await failedTry(abc);await rays(abc,["B","C"],["B","A"]);await passedTry(abc);
+  const abc=page.getByTestId("geometry-abc-rays");await expect(abc).toBeVisible();await expect(abc.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await rays(abc,["A","B"],["B","A"]);await failedTry(abc);await rays(abc,["B","C"],["B","A"]);await passedTry(abc);mark("abc rays passed");
   // 7: مواضع تقاطعات d/L وL/T وd/T وتسميتها E,F,G.
-  const d=page.getByTestId("geometry-dlt");await expect(d.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await labelIntersections(d,{E:dlt.F,F:dlt.E,G:dlt.G});await failedTry(d);await d.getByRole("button",{name:"E",exact:true}).click();await d.getByRole("button",{name:"موضع تقاطع محتمل"}).first().focus();await page.keyboard.press("Enter");await labelIntersections(d,{F:dlt.F,G:dlt.G});await passedTry(d);
+  const d=page.getByTestId("geometry-dlt");await expect(d.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await labelIntersections(d,{E:dlt.F,F:dlt.E,G:dlt.G});await failedTry(d);await d.getByRole("button",{name:"E",exact:true}).click();await d.getByRole("button",{name:"موضع تقاطع محتمل"}).first().focus();await page.keyboard.press("Enter");await labelIntersections(d,{F:dlt.F,G:dlt.G});await passedTry(d);mark("dlt passed");
   // 8: تقاطعات (AB)/(RP)، (AR)/(BP)، (AP)/(BR) وتسميتها M,N,O.
-  const ab=page.getByTestId("geometry-abrp");await expect(ab.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();const view={x:0,y:45,w:490,h:310};await labelIntersections(ab,{M:abrp.N,N:abrp.M,O:abrp.O},view);await failedTry(ab);await labelIntersections(ab,abrp,view);await passedTry(ab);
+  const ab=page.getByTestId("geometry-abrp");await expect(ab.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();const view={x:0,y:45,w:490,h:310};await labelIntersections(ab,{M:abrp.N,N:abrp.M,O:abrp.O},view);await failedTry(ab);await labelIntersections(ab,abrp,view);await passedTry(ab);mark("abrp passed");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth)).toBe(false);expect(consoleErrors).toEqual([]);expect(pageErrors).toEqual([]);
  });
 });

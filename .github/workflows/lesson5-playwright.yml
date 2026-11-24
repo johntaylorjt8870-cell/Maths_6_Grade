@@ -35,7 +35,7 @@ jobs:
           npm run test:e2e 2>&1 | tee /tmp/lesson5-playwright.log
           result=${PIPESTATUS[0]}
           if [ "$result" -ne 0 ]; then
-            grep -E 'Error:|Expected:|Received:|Test timeout|Failed|failed|pageerror|console error' /tmp/lesson5-playwright.log | tail -n 20 | while IFS= read -r line; do echo "::error::$line"; done
+            grep -E '\[lesson5|Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error' /tmp/lesson5-playwright.log | tail -n 20 | while IFS= read -r line; do echo "::error::$line"; done
           fi
           exit "$result"
       - if: always()
