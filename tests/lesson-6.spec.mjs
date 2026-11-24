@@ -78,12 +78,12 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
     const labPair = page.getByTestId("parallel-practice-parallel-lab-pair");
     await assertFeedbackCycle(labPair,
       async () => {
-        await drawLine(labPair, [70, 35], [200, 35]);
-        await drawLine(labPair, [130, 12], [130, 140]);
+        await drawLine(labPair.getByTestId("construction-perpendicular-2"), [70, 35], [200, 35]);
+        await drawLine(labPair.getByTestId("construction-parallel-2"), [130, 12], [130, 140]);
       },
       async () => {
-        await drawLine(labPair, [130, 12], [130, 140]);
-        await drawLine(labPair, [70, 100], [210, 100]);
+        await drawLine(labPair.getByTestId("construction-perpendicular-2"), [130, 12], [130, 140]);
+        await drawLine(labPair.getByTestId("construction-parallel-2"), [70, 100], [210, 100]);
       });
     const labPoint = page.getByTestId("parallel-practice-parallel-lab-point");
     await assertFeedbackCycle(labPoint,
