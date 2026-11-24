@@ -16,9 +16,13 @@
 html {
   font-family: var(--font-sans);
   font-size: 17px;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 body {
+  max-width: 100%;
+  overflow-x: clip;
   font-family: var(--font-sans);
   color: var(--color-ink);
   line-height: 1.85;
