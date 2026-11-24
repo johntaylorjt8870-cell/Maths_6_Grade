@@ -8,7 +8,7 @@ test("الدرس 1 — الرسوم البيانية: إجابة خاطئة، ت
     await page.goto(`${lessonBase(1)}#quiz`);
     const firstQuestion = page.locator("#quiz li").first();
     await expect(firstQuestion).toBeVisible();
-    await firstQuestion.locator('input[type="radio"]').nth(0).check();
+    await firstQuestion.locator("label").nth(0).click();
     await firstQuestion.getByRole("button", { name: "تحقّق من إجابتي" }).click();
     await expect(firstQuestion.getByRole("status")).toContainText("ليست هذه المرة");
     await firstQuestion.getByRole("button", { name: "أعطني تلميحًا" }).click();
