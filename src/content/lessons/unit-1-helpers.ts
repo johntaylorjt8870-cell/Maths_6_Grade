@@ -7,6 +7,7 @@ export const table = (caption: string, headers: string[], rows: string[][]): Les
 export const example = (title: string, steps: string[]): LessonBlock => ({ type: "example", source: "book", title, steps: steps.map(text => ({ text })) });
 export const section = (id: string, title: string, blocks: LessonBlock[]): LessonSection => ({ id, title, blocks });
 export const practiceForm = (prompt: string, fields: { label: string; expected?: string | string[] }[], hint: string, explanation: string, fieldsLayout?: "table"): LessonBlock => ({ type: "bookPractice", source: "book", mode: "form", prompt, fields, fieldsLayout, hint, explanation });
+export const geometryPractice = (prompt: string, geometryId: NonNullable<Extract<LessonBlock, { type: "bookPractice" }>["geometryId"]>, hint: string, explanation: string): LessonBlock => ({ type: "bookPractice", source: "book", mode: "geometry", geometryId, prompt, hint, explanation });
 const QUESTION_HINTS: Record<string, string> = {
   u12q1: "تخيّل المجموعة قبل العدّ: هل يوجد فيها عنصر واحد أم لا يوجد أي عنصر؟",
   u12q2: "احسب قيمة كل تعبير أولًا، ثم تحقّق إن كانت القيمة عددًا صحيحًا غير سالب.",

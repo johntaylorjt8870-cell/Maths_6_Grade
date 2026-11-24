@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { RichText } from "@/components/math/RichText";
 import type { BookPracticeBlock } from "@/content/types";
+import { GeometryBookPractice } from "./GeometryBookPractice";
 
 /** مكوّن بيانات موحّد لأنشطة تمارين الكتاب: خط أعداد، تصنيف، مجموعة قيم، وتأمل مفتوح. */
 export function BookPracticeActivity(task: BookPracticeBlock) {
@@ -43,6 +44,8 @@ export function BookPracticeActivity(task: BookPracticeBlock) {
       {task.mode !== "reflection" && <span className="text-sm text-ink-soft">حاول بنفسك ثم تحقّق</span>}
     </div>
     <p className="text-base font-bold leading-8 text-ink"><RichText text={task.prompt} /></p>
+
+    {task.mode === "geometry" && <GeometryBookPractice task={task} />}
 
     {task.mode === "numberLine" && <div className="mt-5">
       <p className="mb-3 text-sm text-ink-soft">اختر النقاط على مستقيم الأعداد. انقر العدد مرة أخرى لإزالته.</p>
@@ -93,6 +96,7 @@ export function BookPracticeActivity(task: BookPracticeBlock) {
       <textarea id={`reflection-${task.prompt.slice(0,12)}`} value={reflection} onChange={(e) => { setReflection(e.target.value); setDone(false); }} rows={3} className="w-full rounded-xl border border-ink/15 bg-white p-3 leading-7 outline-none focus:border-brand" placeholder="اكتب فكرتك هنا…" />
     </div>}
 
+    {task.mode !== "geometry" && <>
     <div className="mt-4 flex flex-wrap gap-2">
       {task.mode !== "reflection" && <button type="button" disabled={task.mode === "classify" ? !allAssigned : task.mode === "setEntry" ? !answer.trim() : task.mode === "form" ? !fieldsFilled : points.length === 0} className="btn btn-primary disabled:opacity-40" onClick={() => { setChecked(true); setShowHint(false); }}>تحقّق من إجابتي</button>}
       {task.mode === "reflection" && <button type="button" disabled={!reflection.trim()} className="btn btn-primary disabled:opacity-40" onClick={() => setDone(true)}>حفظ فكرتي في النشاط</button>}
@@ -103,6 +107,7 @@ export function BookPracticeActivity(task: BookPracticeBlock) {
       {success ? task.mode === "form" && !task.validator && fields.some((field) => !field.expected) ? <>أكملت تسجيل الفروع المفتوحة. قارنها بجدول الخانات وفكّر في صحة تمثيلك.</> : <>أحسنت! {task.explanation}</> : task.mode === "classify" ? `صنفت بشكل صحيح ${correctAssigned} من ${(task.items ?? []).length} عناصر. راجع القاعدة ثم حاول مجددًا.` : task.mode === "numberLine" ? `اخترت ${points.length} نقطة. قارن مواضعك بحدّي السؤال، ثم راجع تلميحك إن احتجت.` : task.mode === "form" && task.validator === "sixDigitPuzzle" ? `تحقق من هذه الشروط: ${puzzleErrors.join("، ")}.` : task.mode === "form" ? `الإجابات المكتملة الصحيحة: ${correctFields} من ${fields.length}. راجع القيم التي أدخلتها وحاول مجددًا.` : "لم تكتمل الإجابة بعد. راجع الشرط في السؤال وحاول مرة أخرى."}
       {!success && showHint && <span className="mt-1 block">تلميح: {task.hint}</span>}
     </p>}
+    </>}
     {task.mode === "reflection" && done && <p role="status" className="mt-3 rounded-xl bg-emerald-50 p-3 font-semibold text-emerald-900">تم حفظ فكرتك لهذه المحاولة. {task.explanation}</p>}
   </div>;
 }

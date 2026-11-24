@@ -1,0 +1,38 @@
+name: Lesson 5 Playwright
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/content/lessons/lesson-1-5.ts"
+      - "src/content/lessons/unit-1-helpers.ts"
+      - "src/components/lesson/interactive/GeometryBookPractice.tsx"
+      - "src/components/lesson/interactive/BookPracticeActivity.tsx"
+      - "src/content/types.ts"
+      - "tests/lesson-5.spec.mjs"
+      - "playwright.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/lesson5-playwright.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lesson5:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lesson5-playwright-report
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

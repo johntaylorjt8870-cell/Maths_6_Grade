@@ -87,7 +87,8 @@ export interface BookPracticeBlock {
   type: "bookPractice";
   source: "book";
   prompt: string;
-  mode: "numberLine" | "classify" | "setEntry" | "reflection" | "form";
+  mode: "numberLine" | "classify" | "setEntry" | "reflection" | "form" | "geometry";
+  geometryId?: "rspm" | "absmn" | "check-rays" | "check-intersection" | "abc-rays" | "dlt" | "abrp";
   fields?: { label: string; expected?: string | string[]; hint?: string }[];
   fieldsLayout?: "table";
   validator?: "sixDigitPuzzle";
