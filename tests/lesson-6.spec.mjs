@@ -26,7 +26,7 @@ async function choosePair(activity, sectionIndex, categoryIndex, label) {
 }
 
 async function drawLine(canvas, start, end) {
-  const svg = canvas.locator('[data-testid^="construction-canvas-"]');
+  const svg = canvas.locator('[data-testid^="construction-canvas-"]').filter({ visible: true });
   await expect(svg).toHaveCount(1, { timeout: 4_000 });
   const box = await svg.boundingBox();
   for (const [x, y] of [start, end]) await svg.click({ position: { x: (x / 280) * box.width, y: (y / 150) * box.height } });
