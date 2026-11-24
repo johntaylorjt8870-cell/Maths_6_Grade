@@ -18,8 +18,8 @@ test.describe("درس 5: كل التفاعلات الهندسية والفروع
   await page.goto(`${base}#discovery`);
   // 1: P وR على المستقيم، M خارجه.
   const rspm=page.getByTestId("geometry-rspm");await expect(rspm).toBeVisible();await expect(rspm.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();
-  for(const[n,v]of [["P","تقع على"],["R","تقع على"],["M","تقع على"]])await rspm.locator("fieldset").filter({has:page.getByText(n,{exact:true})}).getByRole("button",{name:v}).click();await failedTry(rspm);
-  for(const[n,v]of [["P","تقع على"],["R","تقع على"],["M","لا تقع على"]])await rspm.locator("fieldset").filter({has:page.getByText(n,{exact:true})}).getByRole("button",{name:v}).click();await passedTry(rspm);
+  for(const[i,v]of [[0,"تقع على"],[1,"تقع على"],[2,"تقع على"]])await rspm.locator("fieldset").nth(i).getByRole("button",{name:v}).click();await failedTry(rspm);
+  for(const[i,v]of [[0,"تقع على"],[1,"تقع على"],[2,"لا تقع على"]])await rspm.locator("fieldset").nth(i).getByRole("button",{name:v}).click();await passedTry(rspm);
   // 2: تحريك B,S,M,N والتحقق من القطعة والمستقيم ونصف المستقيم.
   const absmn=page.getByTestId("geometry-absmn");await expect(absmn.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await placeLinePoints(absmn,{B:310,S:391,M:175,N:391});await failedTry(absmn);await placeLinePoints(absmn,{B:310,S:283,M:175,N:391});await passedTry(absmn);
 
