@@ -28,7 +28,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - name: Run browser suite
+        shell: bash
+        run: |
+          set +e
+          npm run test:e2e 2>&1 | tee /tmp/lesson5-playwright.log
+          result=${PIPESTATUS[0]}
+          if [ "$result" -ne 0 ]; then
+            grep -E 'Error:|Expected:|Received:|Test timeout|Failed|failed|pageerror|console error' /tmp/lesson5-playwright.log | tail -n 20 | while IFS= read -r line; do echo "::error::$line"; done
+          fi
+          exit "$result"
       - if: always()
         uses: actions/upload-artifact@v4
         with:
