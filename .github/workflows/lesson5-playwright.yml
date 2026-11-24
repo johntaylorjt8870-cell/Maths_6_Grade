@@ -1,16 +1,16 @@
-name: Lesson 5 Playwright
+name: Unit 1 Lessons 1–6 Playwright
 on:
   pull_request:
     branches: [main]
     paths:
-      - "src/content/lessons/lesson-1-5.ts"
+      - "src/content/lessons/lesson-1-*.ts"
       - "src/content/lessons/unit-1-helpers.ts"
-      - "src/components/lesson/interactive/GeometryBookPractice.tsx"
+      - "src/components/lesson/interactive/**"
+      - "src/components/lesson/BookPracticeActivity.tsx"
       - "src/components/lesson/interactive/BookPracticeActivity.tsx"
+      - "src/components/lesson/LessonContent.tsx"
       - "src/content/types.ts"
-      - "tests/lesson-5.spec.mjs"
-      - "tests/lesson-5-absmn.spec.mjs"
-      - "tests/lesson-5-abc-rays.spec.mjs"
+      - "tests/lesson-*.spec.mjs"
       - "playwright.config.ts"
       - "package.json"
       - "package-lock.json"
@@ -19,9 +19,9 @@ on:
 permissions:
   contents: read
 jobs:
-  lesson5:
+  unit1-lessons:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,16 +39,17 @@ jobs:
             "$@" 2>&1 | tee "/tmp/${name}.log"
             result=${PIPESTATUS[0]}
             if [ "$result" -ne 0 ]; then
-              grep -E '\[absmn|\[lesson5|Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error' "/tmp/${name}.log" | tail -n 30 | while IFS= read -r line; do echo "::error::$line"; done
+              grep -E '\[lesson|Error:|Expected:|Received:|Test timeout|Timeout|Failed|failed|pageerror|console error' "/tmp/${name}.log" | tail -n 50 | while IFS= read -r line; do echo "::error::$line"; done
               return "$result"
             fi
           }
           run_suite abc-rays npm run test:e2e -- tests/lesson-5-abc-rays.spec.mjs || exit $?
-          run_suite lesson5 npm run test:e2e || exit $?
+          run_suite absmn npm run test:e2e -- tests/lesson-5-absmn.spec.mjs || exit $?
+          run_suite all-lessons npm run test:e2e || exit $?
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: lesson5-playwright-report
+          name: unit1-lessons-playwright-report
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
-  testMatch: "lesson-5*.spec.mjs",
+  testMatch: "lesson-*.spec.mjs",
   fullyParallel: false,
   timeout: 120_000,
   expect: { timeout: 5_000 },

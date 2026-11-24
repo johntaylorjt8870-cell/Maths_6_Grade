@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { RichText } from "@/components/math/RichText";
 import type { BookPracticeBlock } from "@/content/types";
 import { GeometryBookPractice } from "./GeometryBookPractice";
+import { ParallelBookPractice } from "./ParallelBookPractice";
 
 /** مكوّن بيانات موحّد لأنشطة تمارين الكتاب: خط أعداد، تصنيف، مجموعة قيم، وتأمل مفتوح. */
 export function BookPracticeActivity(task: BookPracticeBlock) {
@@ -45,7 +46,7 @@ export function BookPracticeActivity(task: BookPracticeBlock) {
     </div>
     <p className="text-base font-bold leading-8 text-ink"><RichText text={task.prompt} /></p>
 
-    {task.mode === "geometry" && <GeometryBookPractice task={task} />}
+    {task.mode === "geometry" && (task.geometryId?.startsWith("parallel-") ? <ParallelBookPractice task={task} /> : <GeometryBookPractice task={task} />)}
 
     {task.mode === "numberLine" && <div className="mt-5">
       <p className="mb-3 text-sm text-ink-soft">اختر النقاط على مستقيم الأعداد. انقر العدد مرة أخرى لإزالته.</p>
