@@ -50,8 +50,10 @@ npm run dev          # http://localhost:3000/Maths_6_Grade/
 # الفحوصات المطلوبة قبل الدمج
 npm run lint
 npm run typecheck
-npm run test:e2e     # Playwright: يبني out/ ويخدمه على 4001 تلقائيًا
-npm run verify       # الثلاثة معًا: lint ثم typecheck ثم test:e2e
+npm run verify:content  # فحص تكامل محتوى الدروس والسجلات والمراحل والروابط
+npm run test:content    # اختبارات الفاحص على نسخ معزولة (حالات نجاح وفشل مضبوطة)
+npm run test:e2e        # Playwright: يبني out/ ويخدمه على 4001 تلقائيًا
+npm run verify          # السلسلة الكاملة: lint ثم typecheck ثم verify:content ثم test:content ثم test:e2e
 
 # النسخة النهائية الثابتة (نفس مخرجات GitHub Pages)
 npm run build        # يُنتج مجلد out/
@@ -70,12 +72,12 @@ npm run preview      # http://localhost:4000/Maths_6_Grade/
 
 | الوظيفة | ما تفعله | متى |
 | --- | --- | --- |
-| `quality` | `npm run lint` ثم `npm run typecheck` | كل تغيير غير توثيقي (طلب دمج أو دفع) |
+| `quality` | `npm run lint` ثم `npm run typecheck` ثم `npm run verify:content` ثم `npm run test:content` | كل تغيير غير توثيقي (طلب دمج أو دفع) |
 | `e2e` | `npm run test:e2e` بعد `quality` — يبني التصدير الثابت ثم يشغّل Playwright | كل تغيير غير توثيقي |
 | `build` | `npm run build` (في كل تشغيل، بما فيه طلبات الدمج) ورفع التصدير كـ Pages artifact على غير طلبات الدمج | بعد نجاح `e2e` |
 | `deploy` | نشر GitHub Pages | بعد `build`، ومقيّد بالفرع `main` فقط |
 
-- **لا نشر قبل نجاح الفحوصات:** `build` يعتمد على `e2e`، و`deploy` يعتمد على `build`؛ فأي فشل في lint أو typecheck أو Playwright أو build يمنع الوصول إلى `out/` والنشر.
+- **لا نشر قبل نجاح الفحوصات:** `e2e` يعتمد على `quality`، و`build` يعتمد على `quality` و`e2e`، و`deploy` يعتمد على `build`؛ فأي فشل في lint أو typecheck أو فحص تكامل المحتوى (`verify:content` / `test:content`) أو Playwright أو build يمنع الوصول إلى `out/` والنشر.
 - **لا قائمة اختبارات يدوية:** `playwright.config.ts` يستخدم `testMatch: "**/*.spec.mjs"`، فأي ملف اختبار جديد يُشغَّل تلقائيًا. و`tests/all-lessons.spec.mjs` يكتشف الدروس المنشورة من الموقع نفسه، فالدرس الجديد يدخل المصفوفة بلا تعديل.
 - **السجلات والتشخيص:** يُرفع `test-results/` (ومعه `playwright-report/`) كـ artifact عند كل تشغيل، ويحتوي عند الفشل على `trace` ولقطات شاشة وملفات سياق الخطأ. ويُطبع ملخص الفشل في سجل التشغيل نفسه. محاولة إعادة واحدة على CI فقط للتقلّب العارض.
 - **سياق الملفات:** أي تغيير في `docs/**` أو `*.md` أو `.gitignore` وحده لا يشغّل البوابة (لا يمسّ الموقع).
@@ -95,6 +97,7 @@ npm run preview      # http://localhost:4000/Maths_6_Grade/
 | `tests/lesson-5-abc-rays.spec.mjs` | الدرس 5: `abc-rays` — التسمية والمواضع والتلميح |
 | `tests/lesson-6.spec.mjs` | الدرس 6: التعامد والتوازي — تفاعلات الكتاب والفروع على ثلاثة عروض |
 | `tests/lesson-e2e-helpers.mjs` | دوال مشتركة (`goToLessonStage`، `setRangeInput`، `watchErrors`، كشف الفائض الأفقي…) |
+| `tests/content-integrity.test.mjs` | اختبارات معزولة لفاحص تكامل المحتوى (`scripts/verify-content-integrity.mjs`): حالات النجاح والفشل المضبوطة دون تعديل المحتوى الحقيقي |
 
 ---
 

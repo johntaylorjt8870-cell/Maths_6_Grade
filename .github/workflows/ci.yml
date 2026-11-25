@@ -1,7 +1,7 @@
 # بوابة الجودة والنشر الموحّدة للمشروع.
 #
-# - أي تغيير يمسّ الموقع (أي ملف غير توثيقي) يمرّ بالتسلسل: lint ← typecheck ← Playwright.
-# - النشر إلى GitHub Pages لا يبدأ إلا بعد نجاح الوظائف الثلاث، ثم بناء التصدير الثابت.
+# - أي تغيير يمسّ الموقع (أي ملف غير توثيقي) يمرّ بالتسلسل: lint ← typecheck ← فحص تكامل المحتوى ← Playwright.
+# - النشر إلى GitHub Pages لا يبدأ إلا بعد نجاح الوظائف السابقة، ثم بناء التصدير الثابت.
 # - كل ملف `tests/*.spec.mjs` جديد يُشغَّل تلقائيًا: لا توجد قائمة اختبارات يدوية هنا.
 # - سجلات Playwright وتقارير HTML وآثار الفشل (trace/لقطات) تُرفع دائمًا كـ artifacts.
 #
@@ -38,7 +38,7 @@ env:
 
 jobs:
   quality:
-    name: lint + typecheck
+    name: lint + typecheck + content integrity
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -50,6 +50,8 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run verify:content
+      - run: npm run test:content
 
   e2e:
     name: Playwright (كل الدروس المنشورة)
