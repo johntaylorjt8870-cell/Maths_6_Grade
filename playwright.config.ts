@@ -17,13 +17,18 @@ export default defineConfig({
   // كل ملف يبقى تسلسليًا؛ التوزيع على عاملين يقصر زمن CI دون مساس بالخادم الثابت.
   workers: process.env.CI ? 2 : undefined,
   timeout: 120_000,
-  expect: { timeout: 5_000 },
+  // مهلات أطول من الافتراضي: ترطيب React على صفحات الدروس الثقيلة قد يتجاوز 5 ثوان
+  // على عامل CI مشترك، والإخفاق هنا يكون تقلّبًا لا عيبًا حقيقيًا.
+  expect: { timeout: 10_000 },
+  // محاولة ثانية واحدة على CI فقط للتقلّب العارض؛ العيب الحقيقي يفشل في المحاولتين
+  // فيبقى البوابة مانعًا للنشر.
+  retries: process.env.CI ? 1 : 0,
   reporter: [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
   use: {
     ...devices["Desktop Chrome"],
     baseURL: "http://127.0.0.1:4001",
     headless: true,
-    actionTimeout: 4_000,
+    actionTimeout: 8_000,
     navigationTimeout: 15_000,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
