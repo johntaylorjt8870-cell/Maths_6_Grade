@@ -6,6 +6,7 @@ import { PrintNotebookButton } from "@/components/lesson/PrintNotebookButton";
 import { LessonSteps, type LessonStep } from "@/components/lesson/LessonSteps";
 import { LESSON_STAGES } from "@/content/lesson-stages";
 import { ACTIVITY_REGISTRY, EXERCISE_REGISTRY, FIGURE_REGISTRY } from "@/components/lesson/interactive/registry";
+import { BookPracticeActivity } from "@/components/lesson/interactive/BookPracticeActivity";
 import type { ContentSource, FigureBlock, Lesson, LessonBlock, LessonContent as Content, LessonNotebook, LessonSection, Quiz } from "@/content/types";
 
 /**
@@ -315,6 +316,9 @@ function Block({ block }: { block: LessonBlock }) {
         </div>
       );
     }
+
+    case "bookPractice":
+      return <BookPracticeActivity {...block} />;
 
     case "summary":
       return (
