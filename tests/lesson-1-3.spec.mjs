@@ -10,6 +10,16 @@ test("الدرس 3 — كتابة العدد: تصنيف جميع صيغ 3202000
   ];
   for (const width of viewports) {
     await page.setViewportSize({ width, height: 900 });
+    await goToStage(page, 3, "lab", width);
+    const placeLab = page.locator('[data-lab="3"]');
+    await expect(placeLab.getByRole("status")).toContainText("تظهر");
+    await placeLab.getByLabel("قيمة الرقم المتوقعة").fill("1");
+    await placeLab.getByRole("button", { name: "تحقق", exact: true }).click();
+    await expect(placeLab.getByRole("status")).toContainText("ليست القيمة الصحيحة");
+    await placeLab.getByLabel("قيمة الرقم المتوقعة").fill("9000000");
+    await placeLab.getByRole("button", { name: "تحقق", exact: true }).click();
+    await expect(placeLab.getByRole("status")).toContainText("صحيح");
+
     await goToStage(page, 3, "check", width);
     const activity = page.locator("#check .book-practice").first();
     const check = activity.getByRole("button", { name: "تحقّق من إجابتي" });

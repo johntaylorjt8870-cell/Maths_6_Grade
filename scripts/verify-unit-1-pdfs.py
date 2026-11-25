@@ -1,15 +1,24 @@
 """Optional local PDF audit. Requires PyMuPDF (test tool, not an app dependency).
-Run after verify-unit-1-lessons.mjs: python scripts/verify-unit-1-pdfs.py
-PDFs and previews remain in ignored test-results/.
+
+Run after the browser suite that produces the notebooks:
+    npx playwright test tests/all-lessons.spec.mjs
+    PYTHONPATH=<pymupdf-path> python3 scripts/verify-unit-1-pdfs.py
+
+The spec writes one A4 PDF per published lesson to `test-results/notebooks/`,
+and the previews produced here stay in the same ignored folder.
 """
 import json
 from pathlib import Path
 import pymupdf
 
-folder = Path("test-results/unit-1")
+folder = Path("test-results/notebooks")
+pdfs = sorted(folder.glob("lesson-*.pdf"))
+assert pdfs, "لا توجد ملفات PDF. شغّل `npx playwright test tests/all-lessons.spec.mjs` أولًا."
+
 results = []
-for lesson in range(2, 7):
-    document = pymupdf.open(folder / f"lesson-{lesson}-notebook.pdf")
+for pdf in pdfs:
+    lesson = pdf.stem
+    document = pymupdf.open(pdf)
     outside = []
     empty_pages = []
     drawing_count = 0
@@ -30,7 +39,7 @@ for lesson in range(2, 7):
         drawing_count += len(page.get_drawings())
         col, row = index % 3, index // 3
         sheet_page.show_pdf_page(pymupdf.Rect(col*300, row*440, (col+1)*300, (row+1)*440), document, index)
-    sheet_page.get_pixmap(matrix=pymupdf.Matrix(1.5, 1.5)).save(folder / f"lesson-{lesson}-all-pages.png")
+    sheet_page.get_pixmap(matrix=pymupdf.Matrix(1.5, 1.5)).save(folder / f"{lesson}-all-pages.png")
     result = {"lesson": lesson, "pages": len(document), "format": "A4", "emptyPages": empty_pages, "textOutsideSafeBounds": outside, "vectorDrawingPaths": drawing_count}
     results.append(result)
     assert not outside and not empty_pages, result

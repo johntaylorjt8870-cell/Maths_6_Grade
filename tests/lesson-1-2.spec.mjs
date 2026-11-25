@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { assertNoHorizontalOverflow, assertNotebookAndPrint, goToStage, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
+import { assertNoHorizontalOverflow, assertNotebookAndPrint, goToStage, setRangeInput, viewports, watchErrors } from "./lesson-e2e-helpers.mjs";
 
 test("الدرس 2 — مستقيم الأعداد والتصنيف: الناقص والخطأ والتلميح والإعادة والصواب", async ({ page }) => {
   const errors = await watchErrors(page);
@@ -18,6 +18,17 @@ test("الدرس 2 — مستقيم الأعداد والتصنيف: الناق�
     for (const [shape, count] of [["أ",1],["ب",2],["ج",3],["د",4],["هـ",5],["و",6],["ز",7],["ح",8],["ط",9],["ك",0]]) await angles.getByLabel(`عدد الزوايا في الشكل ${shape}`).fill(String(count));
     await angleCheck.click();
     await expect(angles.getByRole("status")).toContainText("أحسنت!");
+
+    await goToStage(page, 2, "lab", width);
+    const naturalLab = page.locator('[data-lab="2"]');
+    await expect(naturalLab.getByRole("status")).toContainText("تظهر");
+    await setRangeInput(naturalLab.getByLabel("عدد الأشياء", { exact: true }), 7);
+    await expect(naturalLab.locator('svg[role="img"] circle')).toHaveCount(7);
+    await naturalLab.getByLabel("تعبير التصنيف").selectOption("1");
+    await naturalLab.getByRole("button", { name: "ليس عددًا طبيعيًا", exact: true }).click();
+    await expect(naturalLab.getByRole("status")).toContainText("حاول");
+    await naturalLab.getByRole("button", { name: "عدد طبيعي", exact: true }).click();
+    await expect(naturalLab.getByRole("status")).toContainText("صحيح");
 
     await goToStage(page, 2, "check", width);
     const lineActivity = page.locator("#check .book-practice").filter({ hasText: "مثّل الأعداد الطبيعية المحصورة بين 0 و15" }).first();

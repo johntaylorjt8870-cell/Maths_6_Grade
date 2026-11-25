@@ -5,6 +5,16 @@ test("الدرس 4 — تقريب العدد 295992458 إلى أقرب مليو�
   const errors = await watchErrors(page);
   for (const width of viewports) {
     await page.setViewportSize({ width, height: 900 });
+    await goToStage(page, 4, "lab", width);
+    const roundingLab = page.locator('[data-lab="4"]');
+    await expect(roundingLab.getByRole("status")).toContainText("تظهر");
+    await roundingLab.getByLabel("ناتج التقريب المتوقع").fill("1");
+    await roundingLab.getByRole("button", { name: "تحقق", exact: true }).click();
+    await expect(roundingLab.getByRole("status")).toContainText("راجع الخانة المجاورة");
+    await roundingLab.getByLabel("ناتج التقريب المتوقع").fill("503700000");
+    await roundingLab.getByRole("button", { name: "تحقق", exact: true }).click();
+    await expect(roundingLab.getByRole("status")).toContainText("صحيح");
+
     await goToStage(page, 4, "check", width);
     const activity = page.locator("#check .book-practice").first();
     const answer = activity.getByLabel("إلى أقرب مليون");
