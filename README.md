@@ -40,7 +40,7 @@ npm run preview      # http://localhost:4000/Maths_6_Grade/
 | --- | --- | --- |
 | `quality` | `npm run lint` ثم `npm run typecheck` | كل تغيير غير توثيقي (طلب دمج أو دفع) |
 | `e2e` | `npm run test:e2e` بعد `quality` — يبني التصدير الثابت ثم يشغّل Playwright | كل تغيير غير توثيقي |
-| `build` | `npm run build` ورفع التصدير الثابت كـ Pages artifact | بعد نجاح `e2e` |
+| `build` | `npm run build` (في كل تشغيل، بما فيه طلبات الدمج) ورفع التصدير كـ Pages artifact على غير طلبات الدمج | بعد نجاح `e2e` |
 | `deploy` | نشر GitHub Pages | بعد `build`، ومقيّد بالفرع `main` فقط |
 
 - **لا نشر قبل نجاح الفحوصات:** `build` يعتمد على `e2e`، و`deploy` يعتمد على `build`؛ فأي فشل في lint أو typecheck أو Playwright يمنع الوصول إلى `out/` والنشر.

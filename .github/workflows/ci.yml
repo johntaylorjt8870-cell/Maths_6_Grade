@@ -88,7 +88,8 @@ jobs:
   build:
     name: build static export
     needs: [quality, e2e]
-    if: github.event_name != 'pull_request'
+    # يُبنى التصدير الثابت في كل تشغيل — بما فيه طلبات الدمج — حتى لا يكتشف خطأ البناء
+    # إلا بعد الدمج. الآرتيفاكت الذي ينشره Pages يُرفع خارج طلبات الدمج فقط.
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -100,7 +101,9 @@ jobs:
       - run: npm ci
       - run: npm run build
       - uses: actions/configure-pages@v5
+        if: github.event_name != 'pull_request'
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
         with:
           path: out
 

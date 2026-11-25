@@ -7,7 +7,7 @@
 
 | الملف | التغيير |
 | --- | --- |
-| `.github/workflows/ci.yml` (جديد) | سير عمل واحد بدل ثلاثة: `quality` ← `e2e` ← `build` ← `deploy` |
+| `.github/workflows/ci.yml` (جديد) | سير عمل واحد بدل ثلاثة: `quality` ← `e2e` ← `build` ← `deploy` (البناء يعمل على طلبات الدمج أيضًا، والنشر على `main` فقط) |
 | `.github/workflows/deploy.yml` (محذوف) | كان ينشر بلا أي اختبار |
 | `.github/workflows/lesson5-playwright.yml` (محذوف) | كان يشغّل ملف اختبار واحد فقط |
 | `playwright.config.ts` | `testMatch` عام + تقرير HTML + تتبّع/لقطة عند الفشل + مهلات مناسبة لعوامل CI |
