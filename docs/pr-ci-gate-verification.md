@@ -65,6 +65,16 @@
 يمنع بناء المخرجات ونشرها تلقائيًا. ويُرفع `test-results/` و`playwright-report/`
 دائمًا (`if: always()`) حتى عند الفشل.
 
+## 5.1) إثبات على GitHub Actions
+
+| التشغيل | النتيجة |
+| --- | --- |
+| [تشغيل ناجح على طلب الدمج](https://github.com/johntaylorjt8870-cell/Maths_6_Grade/actions/runs/45659493372) | `lint + typecheck` ✅ · `Playwright` ✅ · `build static export` ✅ · `deploy` متخطّى (ليس `main`) |
+| [تشغيل ناجح بـ workflow_dispatch](https://github.com/johntaylorjt8870-cell/Maths_6_Grade/actions/runs/45658429365) | نفس السلسلة + بناء `out/` ✅ |
+| [تشغيل فاشل مضبوط](https://github.com/johntaylorjt8870-cell/Maths_6_Grade/actions/runs/45657617703) | `lint + typecheck` ✅ · `Playwright` ❌ · **`build` متخطّى** · **`deploy` متخطّى** · رُفع `playwright-artifacts` (5.0 MB) |
+
+في التشغيل الفاشل لم يبدأ `build` إطلاقًا لأن `needs: e2e` لم يتحقّق، وهذا هو منع النشر المطلوب.
+
 ## 6) ملاحظات
 
 - الاختبارات تُشغّل النسخة الثابتة المنشورة نفسها (`npm run build && npm run preview`)
