@@ -1,8 +1,8 @@
 import { expect } from "@playwright/test";
 
+export const BASE = "/Maths_6_Grade";
 export const viewports = [1440, 390, 360];
 export const lessonBase = (n) => `/Maths_6_Grade/lessons/lesson-1-${n}/`;
-
 export async function watchErrors(page) {
   const errors = { console: [], page: [] };
   page.on("console", (msg) => { if (msg.type() === "error") errors.console.push(msg.text()); });
@@ -24,14 +24,40 @@ export async function assertNoHorizontalOverflow(page) {
   expect(metrics.scrollWidth, `horizontal overflow metrics: ${JSON.stringify(metrics)}`).toBeLessThanOrEqual(metrics.clientWidth);
 }
 
-const stageNames = { taheya: "التهيئة", discovery: "اكتشاف المفهوم", learn: "الشرح المفصل", lab: "النشاط / المختبر", check: "تحقق من فهمك", practice: "التطبيق", quiz: "اختبار الدرس", summary: "الملخص", notebook: "دفتر الطالب" };
+/** أسماء المراحل كما تُعرض في شريط التنقل — تطابق `src/content/lesson-stages.ts`. */
+export const stageNames = { taheya: "التهيئة", discovery: "اكتشاف المفهوم", learn: "الشرح المفصل", lab: "النشاط / المختبر", check: "تحقق من فهمك", practice: "التطبيق", quiz: "اختبار الدرس", summary: "الملخص", notebook: "دفتر الطالب" };
+
+/** شريط المراحل المناسب للعرض: قائمة جانبية على الحاسوب، شريط أفقي على الهاتف. */
+export function stageNav(page, width) {
+  return width >= 1024 ? page.locator(".lesson-steps-layout aside") : page.locator(".lesson-steps-chrome").first();
+}
 
 export async function goToStage(page, lessonNumber, stage, width) {
   await page.goto(lessonBase(lessonNumber));
   await expect(page.locator(".lesson-steps-root")).toBeVisible();
-  const nav = width >= 1024 ? page.locator(".lesson-steps-layout aside") : page.locator(".lesson-steps-chrome").first();
-  await nav.getByRole("button", { name: new RegExp(stageNames[stage]) }).click();
+  await stageNav(page, width).getByRole("button", { name: new RegExp(stageNames[stage]) }).click();
   await expect(page.locator(`#stage-panel-${stage}`)).toBeVisible();
+}
+
+/** الانتقال بالمعرّف الكامل للدرس — تُستخدمه الاختبارات المدفوعة ببيانات الفهرس. */
+export async function goToLessonStage(page, lessonId, stage, width) {
+  await page.goto(`${BASE}/lessons/${lessonId}/`);
+  await expect(page.locator(".lesson-steps-root")).toBeVisible();
+  await stageNav(page, width).getByRole("button", { name: new RegExp(stageNames[stage]) }).first().click();
+  await expect(page.locator(`#stage-panel-${stage}`)).toBeVisible();
+}
+
+/**
+ * ضبط قيمة `<input type="range">` كما يفعل المستخدم.
+ * `fill()` لا يدعم مدى الأعداد، والتحديث المباشر لـ`value` لا يُشعر React؛
+ * لذلك نستخدم مُعيّن القيمة الأصلي ثم نُطلق حدث `input` كما يتوقعه React.
+ */
+export async function setRangeInput(locator, value) {
+  await locator.evaluate((element, nextValue) => {
+    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value");
+    descriptor.set.call(element, String(nextValue));
+    element.dispatchEvent(new Event("input", { bubbles: true }));
+  }, value);
 }
 
 export async function assertNotebookAndPrint(page, lessonTitle, width) {

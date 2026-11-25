@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { goToStage } from "./lesson-e2e-helpers.mjs";
+import { goToStage, setRangeInput } from "./lesson-e2e-helpers.mjs";
 
 const widths = [1440, 390, 360];
 
@@ -90,6 +90,15 @@ test.describe("الدرس السادس — التعامد والتوازي، ت�
     await assertFeedbackCycle(page.getByTestId("parallel-practice-parallel-lab-point"),
       async () => drawLine(labPoint, [70, 28], [200, 28]),
       async () => drawLine(labPoint, [130, 12], [130, 105]));
+
+    await goToStage(page, 6, "lab", width);
+    const parallelLab = page.locator('[data-lab="6"]');
+    await expect(parallelLab.getByRole("status")).toContainText("تظهر");
+    await setRangeInput(parallelLab.getByLabel("زاوية الدوران"), 90);
+    await parallelLab.getByRole("button", { name: "متوازيان", exact: true }).click();
+    await expect(parallelLab.getByRole("status")).toContainText("أعد النظر");
+    await parallelLab.getByRole("button", { name: "متعامدان", exact: true }).click();
+    await expect(parallelLab.getByRole("status")).toContainText("صحيح");
 
     await goToStage(page, 6, "learn", width);
     const methodPerpActivity = page.getByTestId("parallel-practice-parallel-lab-point");

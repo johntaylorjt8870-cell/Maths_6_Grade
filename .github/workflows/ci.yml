@@ -1,0 +1,120 @@
+# بوابة الجودة والنشر الموحّدة للمشروع.
+#
+# - أي تغيير يمسّ الموقع (أي ملف غير توثيقي) يمرّ بالتسلسل: lint ← typecheck ← Playwright.
+# - النشر إلى GitHub Pages لا يبدأ إلا بعد نجاح الوظائف الثلاث، ثم بناء التصدير الثابت.
+# - كل ملف `tests/*.spec.mjs` جديد يُشغَّل تلقائيًا: لا توجد قائمة اختبارات يدوية هنا.
+# - سجلات Playwright وتقارير HTML وآثار الفشل (trace/لقطات) تُرفع دائمًا كـ artifacts.
+#
+# ملاحظة على وظيفة `build`: تعمل عند كل حدث غير طلب الدمج (دفعة إلى أي فرع أو تشغيل يدوي)
+# لتكون بوابة «فشل E2E يمنع البناء والنشر» قابلة للإثبات على فرع المراجعة نفسه؛
+# وظيفة `deploy` وحدها مقيّدة بالفرع `main`.
+name: CI (lint, typecheck, E2E) & Deploy
+
+on:
+  pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".gitignore"
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+      - ".gitignore"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  quality:
+    name: lint + typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  e2e:
+    name: Playwright (كل الدروس المنشورة)
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: تشغيل اختبارات المتصفح
+        run: npm run test:e2e
+      - name: ملخص الفشل في سجل التشغيل
+        if: failure()
+        run: |
+          echo "── سياق الأخطاء (test-results) ──"
+          find test-results -maxdepth 3 -name "*.md" -print -exec sed -n '1,40p' {} \; 2>/dev/null || true
+          echo "── ملفات التشخيص ──"
+          find test-results playwright-report -maxdepth 2 -type f 2>/dev/null | head -40 || true
+      - name: رفع سجلات وملفات التشخيص
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          overwrite: true
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
+
+  build:
+    name: build static export
+    needs: [quality, e2e]
+    # يُبنى التصدير الثابت في كل تشغيل — بما فيه طلبات الدمج — حتى لا يكتشف خطأ البناء
+    # إلا بعد الدمج. الآرتيفاكت الذي ينشره Pages يُرفع خارج طلبات الدمج فقط.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+        if: github.event_name != 'pull_request'
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: out
+
+  deploy:
+    name: deploy to GitHub Pages
+    needs: build
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

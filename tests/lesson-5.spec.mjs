@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { setRangeInput } from "./lesson-e2e-helpers.mjs";
 const widths = [1440, 390, 360], base = "/Maths_6_Grade/lessons/lesson-1-5/";
 const points = { A:[200,140], B:[380,90], R:[240,215], P:[320,225] };
 function intersection(a,b,c,d){const [x1,y1]=a,[x2,y2]=b,[x3,y3]=c,[x4,y4]=d,den=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4),det1=x1*y2-y1*x2,det2=x3*y4-y3*x4;return{x:(det1*(x3-x4)-(x1-x2)*det2)/den,y:(det1*(y3-y4)-(y1-y2)*det2)/den}}
@@ -38,6 +39,14 @@ test.describe("درس 5: كل التفاعلات الهندسية والفروع
   const d=page.getByTestId("geometry-dlt");await expect(d.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();await labelIntersections(d,{E:dlt.F,F:dlt.E,G:dlt.G});await failedTry(d);await d.getByRole("button",{name:"E",exact:true}).click();await d.getByRole("button",{name:"موضع تقاطع محتمل"}).first().focus();await page.keyboard.press("Enter");await labelIntersections(d,{F:dlt.F,G:dlt.G});await passedTry(d);mark("dlt passed");
   // 8: تقاطعات (AB)/(RP)، (AR)/(BP)، (AP)/(BR) وتسميتها M,N,O.
   const ab=page.getByTestId("geometry-abrp");await expect(ab.getByRole("button",{name:"تحقّق من الإنشاء"})).toBeDisabled();const view={x:0,y:45,w:490,h:310};await labelIntersections(ab,{M:abrp.N,N:abrp.M,O:abrp.O},view);await failedTry(ab);await labelIntersections(ab,abrp,view);await passedTry(ab);mark("abrp passed");
+  mark("lab line");await page.goto(`${base}#lab`);
+  const lineLab=page.locator('[data-lab="5"]');await expect(lineLab.getByRole("status")).toContainText("تظهر");
+  await setRangeInput(lineLab.getByLabel("موضع M"),100);
+  await lineLab.getByRole("button",{name:"تنتمي",exact:true}).click();await expect(lineLab.getByRole("status")).toContainText("راجع حدود الشكل");
+  await lineLab.getByRole("button",{name:"لا تنتمي",exact:true}).click();await expect(lineLab.getByRole("status")).toContainText("صحيح");
+  await lineLab.getByLabel("نوع الشكل").selectOption("line");
+  await lineLab.getByRole("button",{name:"تنتمي",exact:true}).click();await expect(lineLab.getByRole("status")).toContainText("صحيح");
+  mark("lab passed");
   expect(await page.evaluate(()=>document.documentElement.scrollWidth>document.documentElement.clientWidth)).toBe(false);expect(consoleErrors).toEqual([]);expect(pageErrors).toEqual([]);
  });
 });
